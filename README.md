@@ -1,3 +1,9 @@
+# Пишу для себя:
+
+## Команда для генерации файлов .go из .proto: protoc -I protos protos/auth.proto --go_out=gen --go_opt=paths=source_relative --go-grpc_out=gen --go-grpc_opt=paths=source_relative
+
+# Все, что ниже, НЕАКТУАЛЬНО!
+
 ## Как запускать:
 1. Создайте файл .env в корне проекта. Пример содержимого файла:
 ```console
