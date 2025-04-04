@@ -325,7 +325,7 @@ const file_auth_proto_rawDesc = "" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x120\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x12?\n" +
 	"\n" +
-	"CheckToken\x12\x17.auth.CheckTokenRequest\x1a\x18.auth.CheckTokenResponseB!Z\x1fgrpc-auth/internal/web/gen/authb\x06proto3"
+	"CheckToken\x12\x17.auth.CheckTokenRequest\x1a\x18.auth.CheckTokenResponseB\x19Z\x17grpc-auth/grpc/gen/authb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once

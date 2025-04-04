@@ -1,6 +1,6 @@
 # Пишу для себя:
 
-## Команда для генерации файлов .go из .proto: protoc -I protos protos/auth.proto --go_out=gen --go_opt=paths=source_relative --go-grpc_out=gen --go-grpc_opt=paths=source_relative
+## Команда для генерации файлов .go из .proto: protoc -I grpc/proto grpc/proto/auth.proto --go_out=grpc/gen --go_opt=paths=source_relative --go-grpc_out=grpc/gen --go-grpc_opt=paths=source_relative
 
 # Все, что ниже, НЕАКТУАЛЬНО!
 
