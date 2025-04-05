@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-type RealSalter struct {
-	staticSalt string
-}
+const staticSalt string = "-\\S?-bPGZO{n!]o6&8VvL2;oR*E7f~~pQe-;b*Z9qKkZ]HB<zLYC*PP1q>=Y^{gT"
 
-func NewRealSalter(staticSalt string) *RealSalter {
-	return &RealSalter{staticSalt}
+type RealSalter struct{}
+
+func NewRealSalter() *RealSalter {
+	return &RealSalter{}
 }
 
 func (s *RealSalter) Salt(uuid uuid.UUID, createdAt time.Time, name, password string) string {
 	uuidString := uuid.String()
 	createdAtString := createdAt.String()
-	return createdAtString + s.staticSalt + name + s.staticSalt + password + createdAtString + uuidString + uuidString
+	return createdAtString + staticSalt + name + staticSalt + password + createdAtString + uuidString + uuidString
 }

@@ -1,16 +1,19 @@
-package core
+package auth
 
-import "context"
+import (
+	"context"
+	"grpc-auth/internal/core"
+)
 
 type RealService struct {
 	unitOfWork   UnitOfWork
-	timeProvider TimeProvider
-	uuidProvider UuidProvider
-	hasher       Hasher
-	salter       Salter
+	timeProvider core.TimeProvider
+	uuidProvider core.UuidProvider
+	hasher       core.Hasher
+	salter       core.Salter
 }
 
-func NewRealService(unitOfWork UnitOfWork, timeProvider TimeProvider, uuidProvider UuidProvider, hasher Hasher, salter Salter) *RealService {
+func NewRealService(unitOfWork UnitOfWork, timeProvider core.TimeProvider, uuidProvider core.UuidProvider, hasher core.Hasher, salter core.Salter) *RealService {
 	return &RealService{unitOfWork, timeProvider, uuidProvider, hasher, salter}
 }
 
@@ -37,7 +40,7 @@ func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*
 	if !ok {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &InvariantViolationError{"login or/and password is invalid"}
+		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	err = s.unitOfWork.Save(ctx, repository)
@@ -45,7 +48,7 @@ func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*
 		return nil, err
 	}
 
-	return &RegisterResponse{"user created"}, nil
+	return &RegisterResponse{"auth created"}, nil
 }
 
 func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
@@ -63,7 +66,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	if user == nil {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &InvariantViolationError{"login or/and password is invalid"}
+		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
@@ -71,7 +74,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	if user.Password != hashOfSaltedPassword {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &InvariantViolationError{"login or/and password is invalid"}
+		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	err = s.unitOfWork.Save(ctx, repository)
@@ -84,7 +87,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 
 func (s *RealService) CheckToken(request *CheckTokenRequest) (*CheckTokenResponse, error) {
 	if request.Token != "stub" {
-		return nil, &InvariantViolationError{"permission denied"}
+		return nil, &core.InvariantViolationError{Message: "permission denied"}
 	}
 
 	return &CheckTokenResponse{"permission granted"}, nil

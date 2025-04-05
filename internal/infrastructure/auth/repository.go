@@ -1,12 +1,11 @@
-package infrastructure
+package auth
 
 import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-
-	"grpc-auth/internal/core"
+	core "grpc-auth/internal/core/auth"
 )
 
 type PosgresRepository struct {

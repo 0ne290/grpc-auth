@@ -1,19 +1,18 @@
 package infrastructure
 
-import "hash"
+import (
+	"crypto/sha512"
+	"encoding/hex"
+)
 
-type RealHasher struct {
-	hasher hash.Hash
+type Sha512Hasher struct{}
+
+func NewSha512Hasher() *Sha512Hasher {
+	return &Sha512Hasher{}
 }
 
-func NewRealHasher(hasher hash.Hash) *RealHasher {
-	return &RealHasher{hasher}
-}
+func (h *Sha512Hasher) Hash(saltedPassword string) string {
+	checksum := sha512.Sum512([]byte(saltedPassword))
 
-func (h *RealHasher) Hash(saltedPassword string) string {
-	ret := string(h.hasher.Sum([]byte(saltedPassword)))
-
-	h.hasher.Reset()
-
-	return ret
+	return hex.EncodeToString(checksum[:])
 }

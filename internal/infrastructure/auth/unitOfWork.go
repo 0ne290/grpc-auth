@@ -1,9 +1,9 @@
-package infrastructure
+package auth
 
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"grpc-auth/internal/core"
+	core "grpc-auth/internal/core/auth"
 )
 
 type PostgresUnitOfWork struct {

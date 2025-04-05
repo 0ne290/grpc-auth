@@ -1,8 +1,8 @@
-package web
+package auth
 
 import (
 	"context"
-	"grpc-auth/internal/core"
+	core "grpc-auth/internal/core/auth"
 )
 
 type Service interface {

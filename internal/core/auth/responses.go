@@ -1,4 +1,4 @@
-package core
+package auth
 
 type RegisterResponse struct {
 	Message string

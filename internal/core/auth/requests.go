@@ -1,4 +1,4 @@
-package core
+package auth
 
 type RegisterRequest struct {
 	Name, Password string

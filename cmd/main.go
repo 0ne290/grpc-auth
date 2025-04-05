@@ -8,17 +8,20 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"google.golang.org/grpc"
+	"grpc-auth/internal"
+	core "grpc-auth/internal/core/auth"
+	infrastructure2 "grpc-auth/internal/infrastructure"
+	infrastructure "grpc-auth/internal/infrastructure/auth"
+	web "grpc-auth/internal/web/auth"
+	"grpc-auth/internal/web/interceptors"
 	"log"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-// @title Homework 4 API
-// @version 1.0
-// @description Task CRUD
-// @host localhost:8080
-// @BasePath /
 func main() {
 	var cfg internal.AppConfig
 	if err := envconfig.Process("", &cfg); err != nil {
@@ -35,34 +38,36 @@ func main() {
 		log.Fatal(err)
 	}
 
-	taskUnitOfWork := taskInfrastructure.NewPostgresUnitOfWork(pool)
-	userUnitOfWork := userInfrastructure.NewPostgresUnitOfWork(pool)
+	unitOfWork := infrastructure.NewPostgresUnitOfWork(pool)
+	timeProvider := infrastructure2.NewRealTimeProvider()
+	uuidProvider := infrastructure2.NewRealUuidProvider()
+	hasher := infrastructure2.NewSha512Hasher()
+	salter := infrastructure2.NewRealSalter()
 
-	timeProvider := core.NewRealTimeProvider()
-	uuidProvider := core.NewRealUuidProvider()
+	service := core.NewRealService(unitOfWork, timeProvider, uuidProvider, hasher, salter)
 
-	taskService := taskCore.NewService(taskUnitOfWork, timeProvider, uuidProvider)
-	userService := userCore.NewService(userUnitOfWork, timeProvider, uuidProvider)
+	controller := web.NewController(service)
 
-	taskController := taskWeb.NewController(taskService)
-	userController := userWeb.NewController(userService)
+	grpcServer := BuildGrpc(controller, logger)
 
-	app := BuildRouting("http://"+cfg.Rest.ListenAddress, taskController, userController, logger)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 1337))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Запуск HTTP-сервера в отдельной горутине
 	go func() {
-		logger.Infof("Starting server on %s", cfg.Rest.ListenAddress)
-		if err = app.Listen(cfg.Rest.ListenAddress); err != nil {
+		logger.Infof("Starting server on %d", 1337)
+		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
-	// Ожидание системных сигналов для корректного завершения работы
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	<-signalChan
 
 	logger.Info("Shutting down gracefully...")
+	grpcServer.GracefulStop()
 }
 
 func NewLogger(level string) (*zap.SugaredLogger, error) {
@@ -90,7 +95,6 @@ func NewLogger(level string) (*zap.SugaredLogger, error) {
 }
 
 func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*pgxpool.Pool, error) {
-	// Формируем строку подключения
 	connString := fmt.Sprintf(
 		`user=%s password=%s host=%s port=%d dbname=%s sslmode=%s 
         pool_max_conns=%d pool_max_conn_lifetime=%s pool_max_conn_idle_time=%s`,
@@ -105,16 +109,13 @@ func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*p
 		cfg.PoolMaxConnIdleTime.String(),
 	)
 
-	// Парсим конфигурацию подключения
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
 	}
 
-	// Оптимизация выполнения запросов (кеширование запросов)
 	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeCacheDescribe
 
-	// Создаём пул соединений с базой данных
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		return nil, err
@@ -123,31 +124,12 @@ func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*p
 	return pool, nil
 }
 
-func BuildRouting(allowOrigins string, taskController *taskWeb.Controller, userController *userWeb.Controller, logger *zap.SugaredLogger) *fiber.App {
-	app := fiber.New()
+func BuildGrpc(controller *web.Controller, logger *zap.SugaredLogger) *grpc.Server {
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptors.ErrorHandlingAndLogging(logger)))
 
-	app.Get("/swagger/*", swagger.HandlerDefault)
+	//grpcServer := grpc.NewServer()
 
-	app.Use(cors.New(cors.Config{
-		AllowMethods:     "GET, POST, PUT, DELETE",
-		AllowHeaders:     "Accept, Authorization, Content-Type, X-CSRF-Token, X-REQUEST-SomeID",
-		ExposeHeaders:    "Link",
-		AllowCredentials: true,
-		AllowOrigins:     allowOrigins,
-		MaxAge:           300,
-	}))
+	web.RegisterController(grpcServer, controller)
 
-	apiGroup := app.Group("/v1")
-	taskApiGroup := apiGroup.Group("/tasks")
-	userApiGroup := apiGroup.Group("/users")
-
-	taskApiGroup.Post("", middlewares.ErrorHandlingAndLogging(logger), middlewares.Authentication(), taskController.Create)
-	taskApiGroup.Get("", middlewares.ErrorHandlingAndLogging(logger), middlewares.Authentication(), taskController.GetAll)
-	taskApiGroup.Get("/:uuid<guid>", middlewares.ErrorHandlingAndLogging(logger), middlewares.Authentication(), taskController.GetByUuid)
-	taskApiGroup.Put("/:uuid<guid>", middlewares.ErrorHandlingAndLogging(logger), middlewares.Authentication(), taskController.Update)
-	taskApiGroup.Delete("/:uuid<guid>", middlewares.ErrorHandlingAndLogging(logger), middlewares.Authentication(), taskController.Delete)
-
-	userApiGroup.Post("", middlewares.ErrorHandlingAndLogging(logger), userController.Create)
-
-	return app
+	return grpcServer
 }
