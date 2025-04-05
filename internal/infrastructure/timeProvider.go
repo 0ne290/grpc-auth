@@ -9,5 +9,5 @@ func NewRealTimeProvider() *RealTimeProvider {
 }
 
 func (*RealTimeProvider) Now() time.Time {
-	return time.Now()
+	return time.Now().Round(time.Second)
 }

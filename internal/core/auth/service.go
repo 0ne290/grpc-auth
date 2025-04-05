@@ -48,7 +48,7 @@ func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*
 		return nil, err
 	}
 
-	return &RegisterResponse{"auth created"}, nil
+	return &RegisterResponse{"user created"}, nil
 }
 
 func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {

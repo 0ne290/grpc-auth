@@ -33,11 +33,11 @@ func (r *PosgresRepository) TryCreate(ctx context.Context, user *core.User) (boo
 }
 
 func (r *PosgresRepository) TryGetByName(ctx context.Context, name string) (*core.User, error) {
-	const query string = "SELECT * FROM tasks WHERE name = $1 FOR UPDATE"
+	const query string = "SELECT * FROM users WHERE name = $1 FOR UPDATE"
 
 	user := &core.User{}
 
-	err := r.transaction.QueryRow(ctx, query, name).Scan(&user.Uuid, &user.CreatedAt, &user.Name, user.Password)
+	err := r.transaction.QueryRow(ctx, query, name).Scan(&user.Uuid, &user.CreatedAt, &user.Name, &user.Password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
