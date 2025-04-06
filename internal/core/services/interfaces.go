@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"grpc-auth/internal/core/entities"
+	"grpc-auth/internal/core/valueObjects"
 	"time"
 )
 
@@ -32,4 +33,9 @@ type UserUnitOfWork interface {
 type UserRepository interface {
 	TryCreate(ctx context.Context, user *entities.User) (bool, error)
 	TryGetByName(ctx context.Context, name string) (*entities.User, error)
+}
+
+type JwtManager interface {
+	Generate(info *valueObjects.AuthInfo) (string, error)
+	Parse(tokenString string) *valueObjects.AuthInfo
 }

@@ -9,9 +9,9 @@ type AppConfig struct {
 }
 
 type AuthConfig struct {
-	Key                        string `envconfig:"AUTH_KEY" required:"true"`
-	AccessTokenLifetimeInHours int    `envconfig:"AUTH_ACCESS_TOKEN_LIFETIME_IN_HOURS" required:"true"`
-	RefreshTokenLifetimeInDays int    `envconfig:"AUTH_REFRESH_TOKEN_LIFETIME_IN_DAYS" required:"true"`
+	Key                        string        `envconfig:"AUTH_KEY" required:"true"`
+	AccessTokenLifetimeInHours time.Duration `envconfig:"AUTH_ACCESS_TOKEN_LIFETIME_IN_HOURS" required:"true"`
+	RefreshTokenLifetimeInDays time.Duration `envconfig:"AUTH_REFRESH_TOKEN_LIFETIME_IN_DAYS" required:"true"`
 }
 
 type PostgreSqlConfig struct {

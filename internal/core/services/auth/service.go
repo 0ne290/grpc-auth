@@ -5,19 +5,25 @@ import (
 	"grpc-auth/internal"
 	"grpc-auth/internal/core/entities"
 	"grpc-auth/internal/core/services"
+	"grpc-auth/internal/core/valueObjects"
+	"time"
 )
 
+const timeDay = time.Hour * 24
+
 type RealService struct {
-	authConfig   internal.AuthConfig
-	unitOfWork   services.UserUnitOfWork
-	timeProvider services.TimeProvider
-	uuidProvider services.UuidProvider
-	hasher       services.Hasher
-	salter       services.Salter
+	accessTokenLifetimeInHours time.Duration
+	refreshTokenLifetimeInDays time.Duration
+	unitOfWork                 services.UserUnitOfWork
+	timeProvider               services.TimeProvider
+	uuidProvider               services.UuidProvider
+	hasher                     services.Hasher
+	salter                     services.Salter
+	jwtManager                 services.JwtManager
 }
 
-func NewRealService(authConfig internal.AuthConfig, unitOfWork services.UserUnitOfWork, timeProvider services.TimeProvider, uuidProvider services.UuidProvider, hasher services.Hasher, salter services.Salter) *RealService {
-	return &RealService{authConfig, unitOfWork, timeProvider, uuidProvider, hasher, salter}
+func NewRealService(authConfig internal.AuthConfig, unitOfWork services.UserUnitOfWork, timeProvider services.TimeProvider, uuidProvider services.UuidProvider, hasher services.Hasher, salter services.Salter, jwtManager services.JwtManager) *RealService {
+	return &RealService{time.Hour * authConfig.AccessTokenLifetimeInHours, timeDay * authConfig.RefreshTokenLifetimeInDays, unitOfWork, timeProvider, uuidProvider, hasher, salter, jwtManager}
 }
 
 func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*RegisterResponse, error) {
@@ -85,10 +91,21 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		return nil, err
 	}
 
+	now := s.timeProvider.Now()
+
+	authInfo := &valueObjects.AuthInfo{user.Uuid, now.Add(s.accessTokenLifetimeInHours)}
+	accessToken, err := s.jwtManager.Generate(authInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken := s.uuidProvider.Random()
+	session := entities.NewSession(refreshToken, user.Uuid, now.Add(s.refreshTokenLifetimeInDays))
+
 	/* TODO:
 
 	expirationAt := s.timeProvider.Now() + Days(s.authConfig.RefreshTokenLifetimeInDays)
-	session := entities.NewSession(s.uuidProvider.Random(), user.Uuid, expirationAt)
+
 
 	Сохранить сессию в БД
 
