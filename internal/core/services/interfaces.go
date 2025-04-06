@@ -37,5 +37,5 @@ type UserRepository interface {
 
 type JwtManager interface {
 	Generate(info *valueObjects.AuthInfo) (string, error)
-	Parse(tokenString string) *valueObjects.AuthInfo
+	Parse(tokenString string) (*valueObjects.AuthInfo, error)
 }

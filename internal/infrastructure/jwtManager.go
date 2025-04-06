@@ -32,18 +32,24 @@ func (jm *RealJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) 
 	return signedToken, nil
 }
 
-func (jm *RealJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
+func (jm *RealJwtManager) Parse(tokenString string) (*valueObjects.AuthInfo, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return jm.key, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS512.Alg()}))
 
 	if err != nil || !token.Valid {
-		return nil
+		return nil, nil
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	userUuid := claims["userUuid"].(uuid.UUID)
-	expirationAt := claims["expirationAt"].(time.Time)
+	userUuid, err := uuid.Parse(claims["userUuid"].(string))
+	if err != nil {
+		return nil, err
+	}
+	expirationAt, err := time.Parse(time.RFC3339, claims["expirationAt"].(string))
+	if err != nil {
+		return nil, err
+	}
 
-	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
+	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}, nil
 }
