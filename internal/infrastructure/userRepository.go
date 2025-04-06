@@ -1,22 +1,22 @@
-package auth
+package infrastructure
 
 import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
-	core "grpc-auth/internal/core/auth"
+	"grpc-auth/internal/core/entities"
 )
 
-type PosgresRepository struct {
+type PosgresUserRepository struct {
 	transaction pgx.Tx
 }
 
-func newPosgresRepository(transaction pgx.Tx) *PosgresRepository {
-	return &PosgresRepository{transaction}
+func newPosgresUserRepository(transaction pgx.Tx) *PosgresUserRepository {
+	return &PosgresUserRepository{transaction}
 }
 
-func (r *PosgresRepository) TryCreate(ctx context.Context, user *core.User) (bool, error) {
+func (r *PosgresUserRepository) TryCreate(ctx context.Context, user *entities.User) (bool, error) {
 	const query string = "INSERT INTO users VALUES ($1, $2, $3, $4)"
 
 	_, err := r.transaction.Exec(ctx, query, user.Uuid, user.CreatedAt, user.Name, user.Password)
@@ -32,10 +32,10 @@ func (r *PosgresRepository) TryCreate(ctx context.Context, user *core.User) (boo
 	return true, nil
 }
 
-func (r *PosgresRepository) TryGetByName(ctx context.Context, name string) (*core.User, error) {
+func (r *PosgresUserRepository) TryGetByName(ctx context.Context, name string) (*entities.User, error) {
 	const query string = "SELECT * FROM users WHERE name = $1 FOR UPDATE"
 
-	user := &core.User{}
+	user := &entities.User{}
 
 	err := r.transaction.QueryRow(ctx, query, name).Scan(&user.Uuid, &user.CreatedAt, &user.Name, &user.Password)
 	if err != nil {

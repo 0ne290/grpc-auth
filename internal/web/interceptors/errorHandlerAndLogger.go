@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"grpc-auth/internal/core"
+	"grpc-auth/internal/core/services"
 )
 
 var (
-	invariantViolationError *core.InvariantViolationError
+	invariantViolationError *services.InvariantViolationError
 )
 
 func ErrorHandlingAndLogging(logger *zap.SugaredLogger) grpc.UnaryServerInterceptor {

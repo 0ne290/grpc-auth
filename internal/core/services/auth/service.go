@@ -2,19 +2,22 @@ package auth
 
 import (
 	"context"
-	"grpc-auth/internal/core"
+	"grpc-auth/internal"
+	"grpc-auth/internal/core/entities"
+	"grpc-auth/internal/core/services"
 )
 
 type RealService struct {
-	unitOfWork   UnitOfWork
-	timeProvider core.TimeProvider
-	uuidProvider core.UuidProvider
-	hasher       core.Hasher
-	salter       core.Salter
+	authConfig   internal.AuthConfig
+	unitOfWork   services.UserUnitOfWork
+	timeProvider services.TimeProvider
+	uuidProvider services.UuidProvider
+	hasher       services.Hasher
+	salter       services.Salter
 }
 
-func NewRealService(unitOfWork UnitOfWork, timeProvider core.TimeProvider, uuidProvider core.UuidProvider, hasher core.Hasher, salter core.Salter) *RealService {
-	return &RealService{unitOfWork, timeProvider, uuidProvider, hasher, salter}
+func NewRealService(authConfig internal.AuthConfig, unitOfWork services.UserUnitOfWork, timeProvider services.TimeProvider, uuidProvider services.UuidProvider, hasher services.Hasher, salter services.Salter) *RealService {
+	return &RealService{authConfig, unitOfWork, timeProvider, uuidProvider, hasher, salter}
 }
 
 func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*RegisterResponse, error) {
@@ -29,7 +32,7 @@ func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*
 	saltedPassword := s.salter.Salt(userUuid, createdAt, request.Name, request.Password)
 	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
 
-	user := newUser(userUuid, createdAt, request.Name, hashOfSaltedPassword)
+	user := entities.NewUser(userUuid, createdAt, request.Name, hashOfSaltedPassword)
 
 	ok, err := repository.TryCreate(ctx, user)
 	if err != nil {
@@ -40,7 +43,7 @@ func (s *RealService) Register(ctx context.Context, request *RegisterRequest) (*
 	if !ok {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	err = s.unitOfWork.Save(ctx, repository)
@@ -66,7 +69,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	if user == nil {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
@@ -74,7 +77,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	if user.Password != hashOfSaltedPassword {
 		_ = s.unitOfWork.Rollback(ctx, repository)
 
-		return nil, &core.InvariantViolationError{Message: "login or/and password is invalid"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	err = s.unitOfWork.Save(ctx, repository)
@@ -82,12 +85,25 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		return nil, err
 	}
 
+	/* TODO:
+
+	expirationAt := s.timeProvider.Now() + Days(s.authConfig.RefreshTokenLifetimeInDays)
+	session := entities.NewSession(s.uuidProvider.Random(), user.Uuid, expirationAt)
+
+	Сохранить сессию в БД
+
+	Сгенерировать токен доступа
+
+	Вернуть токены обновления и доступа
+
+	*/
+
 	return &LoginResponse{"stub"}, nil
 }
 
 func (s *RealService) CheckToken(request *CheckTokenRequest) (*CheckTokenResponse, error) {
 	if request.Token != "stub" {
-		return nil, &core.InvariantViolationError{Message: "permission denied"}
+		return nil, &services.InvariantViolationError{Message: "permission denied"}
 	}
 
 	return &CheckTokenResponse{"permission granted"}, nil

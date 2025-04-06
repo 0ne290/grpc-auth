@@ -3,11 +3,18 @@ package internal
 import "time"
 
 type AppConfig struct {
-	LogLevel   string
-	PostgreSQL PostgreSQL
+	LogLevel   string `envconfig:"LOG_LEVEL" required:"true"`
+	GrpcAdress string `envconfig:"GRPC_ADDRESS" required:"true"`
+	PostgreSQL PostgreSqlConfig
 }
 
-type PostgreSQL struct {
+type AuthConfig struct {
+	Key                        string `envconfig:"AUTH_KEY" required:"true"`
+	AccessTokenLifetimeInHours int    `envconfig:"AUTH_ACCESS_TOKEN_LIFETIME_IN_HOURS" required:"true"`
+	RefreshTokenLifetimeInDays int    `envconfig:"AUTH_REFRESH_TOKEN_LIFETIME_IN_DAYS" required:"true"`
+}
+
+type PostgreSqlConfig struct {
 	Host                string        `envconfig:"DB_HOST" required:"true"`
 	Port                int           `envconfig:"DB_PORT" required:"true"`
 	Name                string        `envconfig:"DB_NAME" required:"true"`

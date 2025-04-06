@@ -1,4 +1,4 @@
-package auth
+package entities
 
 import (
 	"github.com/google/uuid"
@@ -12,6 +12,6 @@ type User struct {
 	Password  string
 }
 
-func newUser(uuid uuid.UUID, createdAt time.Time, name, password string) *User {
+func NewUser(uuid uuid.UUID, createdAt time.Time, name, password string) *User {
 	return &User{uuid, createdAt, name, password}
 }

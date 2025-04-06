@@ -10,9 +10,8 @@ import (
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"grpc-auth/internal"
-	core "grpc-auth/internal/core/auth"
+	core "grpc-auth/internal/core/services/auth"
 	infrastructure2 "grpc-auth/internal/infrastructure"
-	infrastructure "grpc-auth/internal/infrastructure/auth"
 	web "grpc-auth/internal/web/auth"
 	"grpc-auth/internal/web/interceptors"
 	"log"
@@ -38,7 +37,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	unitOfWork := infrastructure.NewPostgresUnitOfWork(pool)
+	unitOfWork := infrastructure2.NewPostgresUserUnitOfWork(pool)
 	timeProvider := infrastructure2.NewRealTimeProvider()
 	uuidProvider := infrastructure2.NewRealUuidProvider()
 	hasher := infrastructure2.NewSha512Hasher()
@@ -94,7 +93,7 @@ func NewLogger(level string) (*zap.SugaredLogger, error) {
 	return logger.Sugar(), nil
 }
 
-func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSQL) (*pgxpool.Pool, error) {
+func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSqlConfig) (*pgxpool.Pool, error) {
 	connString := fmt.Sprintf(
 		`user=%s password=%s host=%s port=%d dbname=%s sslmode=%s 
         pool_max_conns=%d pool_max_conn_lifetime=%s pool_max_conn_idle_time=%s`,

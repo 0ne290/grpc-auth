@@ -2,11 +2,11 @@ package auth
 
 import (
 	"context"
-	core "grpc-auth/internal/core/auth"
+	auth2 "grpc-auth/internal/core/services/auth"
 )
 
 type Service interface {
-	Register(ctx context.Context, request *core.RegisterRequest) (*core.RegisterResponse, error)
-	Login(ctx context.Context, request *core.LoginRequest) (*core.LoginResponse, error)
-	CheckToken(request *core.CheckTokenRequest) (*core.CheckTokenResponse, error)
+	Register(ctx context.Context, request *auth2.RegisterRequest) (*auth2.RegisterResponse, error)
+	Login(ctx context.Context, request *auth2.LoginRequest) (*auth2.LoginResponse, error)
+	CheckToken(request *auth2.CheckTokenRequest) (*auth2.CheckTokenResponse, error)
 }
