@@ -5,13 +5,14 @@ import "time"
 type AppConfig struct {
 	LogLevel   string `envconfig:"LOG_LEVEL" required:"true"`
 	GrpcAdress string `envconfig:"GRPC_ADDRESS" required:"true"`
+	Auth       AuthConfig
 	PostgreSQL PostgreSqlConfig
 }
 
 type AuthConfig struct {
-	Key                        string        `envconfig:"AUTH_KEY" required:"true"`
-	AccessTokenLifetimeInHours time.Duration `envconfig:"AUTH_ACCESS_TOKEN_LIFETIME_IN_HOURS" required:"true"`
-	RefreshTokenLifetimeInDays time.Duration `envconfig:"AUTH_REFRESH_TOKEN_LIFETIME_IN_DAYS" required:"true"`
+	Key                  string        `envconfig:"AUTH_KEY" required:"true"`
+	AccessTokenLifetime  time.Duration `envconfig:"AUTH_ACCESS_TOKEN_LIFETIME" required:"true"`
+	RefreshTokenLifetime time.Duration `envconfig:"AUTH_REFRESH_TOKEN_LIFETIME" required:"true"`
 }
 
 type PostgreSqlConfig struct {

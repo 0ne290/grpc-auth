@@ -7,7 +7,8 @@ option go_package = "grpc-auth/grpc/gen/auth";
 service Auth {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
-  rpc CheckToken (CheckTokenRequest) returns (CheckTokenResponse);
+  rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
+  rpc CheckAccessToken (CheckAccessTokenRequest) returns (CheckAccessTokenResponse);
 }
 
 message RegisterRequest {
@@ -25,13 +26,23 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string token = 1;
+  string refreshToken = 1;
+  string accessToken = 2;
 }
 
-message CheckTokenRequest {
-  string token = 1;
+message RefreshTokensRequest {
+  string refreshToken = 1;
 }
 
-message CheckTokenResponse {
-  string message = 1;
+message RefreshTokensResponse {
+  string refreshToken = 1;
+  string accessToken = 2;
+}
+
+message CheckAccessTokenRequest {
+  string accessToken = 1;
+}
+
+message CheckAccessTokenResponse {
+  bool isActive = 1;
 }

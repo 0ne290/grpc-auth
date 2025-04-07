@@ -171,7 +171,8 @@ func (x *LoginRequest) GetPassword() string {
 
 type LoginResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
+	AccessToken   string                 `protobuf:"bytes,2,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -206,34 +207,41 @@ func (*LoginResponse) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *LoginResponse) GetToken() string {
+func (x *LoginResponse) GetRefreshToken() string {
 	if x != nil {
-		return x.Token
+		return x.RefreshToken
 	}
 	return ""
 }
 
-type CheckTokenRequest struct {
+func (x *LoginResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type RefreshTokensRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CheckTokenRequest) Reset() {
-	*x = CheckTokenRequest{}
+func (x *RefreshTokensRequest) Reset() {
+	*x = RefreshTokensRequest{}
 	mi := &file_auth_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CheckTokenRequest) String() string {
+func (x *RefreshTokensRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CheckTokenRequest) ProtoMessage() {}
+func (*RefreshTokensRequest) ProtoMessage() {}
 
-func (x *CheckTokenRequest) ProtoReflect() protoreflect.Message {
+func (x *RefreshTokensRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -245,39 +253,40 @@ func (x *CheckTokenRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CheckTokenRequest.ProtoReflect.Descriptor instead.
-func (*CheckTokenRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use RefreshTokensRequest.ProtoReflect.Descriptor instead.
+func (*RefreshTokensRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *CheckTokenRequest) GetToken() string {
+func (x *RefreshTokensRequest) GetRefreshToken() string {
 	if x != nil {
-		return x.Token
+		return x.RefreshToken
 	}
 	return ""
 }
 
-type CheckTokenResponse struct {
+type RefreshTokensResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
+	AccessToken   string                 `protobuf:"bytes,2,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *CheckTokenResponse) Reset() {
-	*x = CheckTokenResponse{}
+func (x *RefreshTokensResponse) Reset() {
+	*x = RefreshTokensResponse{}
 	mi := &file_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *CheckTokenResponse) String() string {
+func (x *RefreshTokensResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*CheckTokenResponse) ProtoMessage() {}
+func (*RefreshTokensResponse) ProtoMessage() {}
 
-func (x *CheckTokenResponse) ProtoReflect() protoreflect.Message {
+func (x *RefreshTokensResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -289,16 +298,111 @@ func (x *CheckTokenResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use CheckTokenResponse.ProtoReflect.Descriptor instead.
-func (*CheckTokenResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use RefreshTokensResponse.ProtoReflect.Descriptor instead.
+func (*RefreshTokensResponse) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *CheckTokenResponse) GetMessage() string {
+func (x *RefreshTokensResponse) GetRefreshToken() string {
 	if x != nil {
-		return x.Message
+		return x.RefreshToken
 	}
 	return ""
+}
+
+func (x *RefreshTokensResponse) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type CheckAccessTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckAccessTokenRequest) Reset() {
+	*x = CheckAccessTokenRequest{}
+	mi := &file_auth_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckAccessTokenRequest) ProtoMessage() {}
+
+func (x *CheckAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*CheckAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CheckAccessTokenRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+type CheckAccessTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IsActive      bool                   `protobuf:"varint,1,opt,name=isActive,proto3" json:"isActive,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CheckAccessTokenResponse) Reset() {
+	*x = CheckAccessTokenResponse{}
+	mi := &file_auth_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CheckAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CheckAccessTokenResponse) ProtoMessage() {}
+
+func (x *CheckAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CheckAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*CheckAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CheckAccessTokenResponse) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
 }
 
 var File_auth_proto protoreflect.FileDescriptor
@@ -314,18 +418,24 @@ const file_auth_proto_rawDesc = "" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"%\n" +
-	"\rLoginResponse\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\")\n" +
-	"\x11CheckTokenRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\".\n" +
-	"\x12CheckTokenResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\xb4\x01\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"U\n" +
+	"\rLoginResponse\x12\"\n" +
+	"\frefreshToken\x18\x01 \x01(\tR\frefreshToken\x12 \n" +
+	"\vaccessToken\x18\x02 \x01(\tR\vaccessToken\":\n" +
+	"\x14RefreshTokensRequest\x12\"\n" +
+	"\frefreshToken\x18\x01 \x01(\tR\frefreshToken\"]\n" +
+	"\x15RefreshTokensResponse\x12\"\n" +
+	"\frefreshToken\x18\x01 \x01(\tR\frefreshToken\x12 \n" +
+	"\vaccessToken\x18\x02 \x01(\tR\vaccessToken\";\n" +
+	"\x17CheckAccessTokenRequest\x12 \n" +
+	"\vaccessToken\x18\x01 \x01(\tR\vaccessToken\"6\n" +
+	"\x18CheckAccessTokenResponse\x12\x1a\n" +
+	"\bisActive\x18\x01 \x01(\bR\bisActive2\x90\x02\n" +
 	"\x04Auth\x129\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x120\n" +
-	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x12?\n" +
-	"\n" +
-	"CheckToken\x12\x17.auth.CheckTokenRequest\x1a\x18.auth.CheckTokenResponseB\x19Z\x17grpc-auth/grpc/gen/authb\x06proto3"
+	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x12H\n" +
+	"\rRefreshTokens\x12\x1a.auth.RefreshTokensRequest\x1a\x1b.auth.RefreshTokensResponse\x12Q\n" +
+	"\x10CheckAccessToken\x12\x1d.auth.CheckAccessTokenRequest\x1a\x1e.auth.CheckAccessTokenResponseB\x19Z\x17grpc-auth/grpc/gen/authb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -339,24 +449,28 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_auth_proto_goTypes = []any{
-	(*RegisterRequest)(nil),    // 0: auth.RegisterRequest
-	(*RegisterResponse)(nil),   // 1: auth.RegisterResponse
-	(*LoginRequest)(nil),       // 2: auth.LoginRequest
-	(*LoginResponse)(nil),      // 3: auth.LoginResponse
-	(*CheckTokenRequest)(nil),  // 4: auth.CheckTokenRequest
-	(*CheckTokenResponse)(nil), // 5: auth.CheckTokenResponse
+	(*RegisterRequest)(nil),          // 0: auth.RegisterRequest
+	(*RegisterResponse)(nil),         // 1: auth.RegisterResponse
+	(*LoginRequest)(nil),             // 2: auth.LoginRequest
+	(*LoginResponse)(nil),            // 3: auth.LoginResponse
+	(*RefreshTokensRequest)(nil),     // 4: auth.RefreshTokensRequest
+	(*RefreshTokensResponse)(nil),    // 5: auth.RefreshTokensResponse
+	(*CheckAccessTokenRequest)(nil),  // 6: auth.CheckAccessTokenRequest
+	(*CheckAccessTokenResponse)(nil), // 7: auth.CheckAccessTokenResponse
 }
 var file_auth_proto_depIdxs = []int32{
 	0, // 0: auth.Auth.Register:input_type -> auth.RegisterRequest
 	2, // 1: auth.Auth.Login:input_type -> auth.LoginRequest
-	4, // 2: auth.Auth.CheckToken:input_type -> auth.CheckTokenRequest
-	1, // 3: auth.Auth.Register:output_type -> auth.RegisterResponse
-	3, // 4: auth.Auth.Login:output_type -> auth.LoginResponse
-	5, // 5: auth.Auth.CheckToken:output_type -> auth.CheckTokenResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	4, // 2: auth.Auth.RefreshTokens:input_type -> auth.RefreshTokensRequest
+	6, // 3: auth.Auth.CheckAccessToken:input_type -> auth.CheckAccessTokenRequest
+	1, // 4: auth.Auth.Register:output_type -> auth.RegisterResponse
+	3, // 5: auth.Auth.Login:output_type -> auth.LoginResponse
+	5, // 6: auth.Auth.RefreshTokens:output_type -> auth.RefreshTokensResponse
+	7, // 7: auth.Auth.CheckAccessToken:output_type -> auth.CheckAccessTokenResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -373,7 +487,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

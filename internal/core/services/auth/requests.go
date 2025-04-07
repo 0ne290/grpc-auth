@@ -8,6 +8,10 @@ type LoginRequest struct {
 	Name, Password string
 }
 
-type CheckTokenRequest struct {
-	Token string
+type RefreshTokensRequest struct {
+	RefreshToken string
+}
+
+type CheckAccessTokenRequest struct {
+	AccessToken string
 }

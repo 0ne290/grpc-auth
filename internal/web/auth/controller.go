@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"grpc-auth/grpc/gen"
-	auth2 "grpc-auth/internal/core/services/auth"
+	service "grpc-auth/internal/core/services/auth"
 )
 
 type Controller struct {
@@ -26,15 +26,15 @@ func (s *Controller) Register(ctx context.Context, req *auth.RegisterRequest) (*
 	return mapRegisterResponse(ret), err
 }
 
-func mapRegisterRequest(source *auth.RegisterRequest) *auth2.RegisterRequest {
+func mapRegisterRequest(source *auth.RegisterRequest) *service.RegisterRequest {
 	if source == nil {
 		return nil
 	}
 
-	return &auth2.RegisterRequest{Name: source.Username, Password: source.Password}
+	return &service.RegisterRequest{Name: source.Username, Password: source.Password}
 }
 
-func mapRegisterResponse(source *auth2.RegisterResponse) *auth.RegisterResponse {
+func mapRegisterResponse(source *service.RegisterResponse) *auth.RegisterResponse {
 	if source == nil {
 		return nil
 	}
@@ -48,40 +48,62 @@ func (s *Controller) Login(ctx context.Context, req *auth.LoginRequest) (*auth.L
 	return mapLoginResponse(ret), err
 }
 
-func mapLoginRequest(source *auth.LoginRequest) *auth2.LoginRequest {
+func mapLoginRequest(source *auth.LoginRequest) *service.LoginRequest {
 	if source == nil {
 		return nil
 	}
 
-	return &auth2.LoginRequest{Name: source.Username, Password: source.Password}
+	return &service.LoginRequest{Name: source.Username, Password: source.Password}
 }
 
-func mapLoginResponse(source *auth2.LoginResponse) *auth.LoginResponse {
+func mapLoginResponse(source *service.LoginResponse) *auth.LoginResponse {
 	if source == nil {
 		return nil
 	}
 
-	return &auth.LoginResponse{Token: source.Token}
+	return &auth.LoginResponse{RefreshToken: source.RefreshToken, AccessToken: source.AccessToken}
 }
 
-func (s *Controller) CheckToken(_ context.Context, req *auth.CheckTokenRequest) (*auth.CheckTokenResponse, error) {
-	ret, err := s.service.CheckToken(mapCheckTokenRequest(req))
+func (s *Controller) RefreshTokens(ctx context.Context, req *auth.RefreshTokensRequest) (*auth.RefreshTokensResponse, error) {
+	ret, err := s.service.RefreshTokens(ctx, mapRefreshTokensRequest(req))
 
-	return mapCheckTokenResponse(ret), err
+	return mapRefreshTokensResponse(ret), err
 }
 
-func mapCheckTokenRequest(source *auth.CheckTokenRequest) *auth2.CheckTokenRequest {
+func mapRefreshTokensRequest(source *auth.RefreshTokensRequest) *service.RefreshTokensRequest {
 	if source == nil {
 		return nil
 	}
 
-	return &auth2.CheckTokenRequest{Token: source.Token}
+	return &service.RefreshTokensRequest{RefreshToken: source.RefreshToken}
 }
 
-func mapCheckTokenResponse(source *auth2.CheckTokenResponse) *auth.CheckTokenResponse {
+func mapRefreshTokensResponse(source *service.RefreshTokensResponse) *auth.RefreshTokensResponse {
 	if source == nil {
 		return nil
 	}
 
-	return &auth.CheckTokenResponse{Message: source.Message}
+	return &auth.RefreshTokensResponse{RefreshToken: source.RefreshToken, AccessToken: source.AccessToken}
+}
+
+func (s *Controller) CheckAccessToken(_ context.Context, req *auth.CheckAccessTokenRequest) (*auth.CheckAccessTokenResponse, error) {
+	ret, err := s.service.CheckAccessToken(mapCheckAccessTokenRequest(req))
+
+	return mapCheckAccessTokenResponse(ret), err
+}
+
+func mapCheckAccessTokenRequest(source *auth.CheckAccessTokenRequest) *service.CheckAccessTokenRequest {
+	if source == nil {
+		return nil
+	}
+
+	return &service.CheckAccessTokenRequest{AccessToken: source.AccessToken}
+}
+
+func mapCheckAccessTokenResponse(source *service.CheckAccessTokenResponse) *auth.CheckAccessTokenResponse {
+	if source == nil {
+		return nil
+	}
+
+	return &auth.CheckAccessTokenResponse{IsActive: source.IsActive}
 }

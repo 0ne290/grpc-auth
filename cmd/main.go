@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"grpc-auth/internal"
 	core "grpc-auth/internal/core/services/auth"
-	infrastructure2 "grpc-auth/internal/infrastructure"
+	"grpc-auth/internal/infrastructure"
 	web "grpc-auth/internal/web/auth"
 	"grpc-auth/internal/web/interceptors"
 	"log"
@@ -37,25 +37,26 @@ func main() {
 		log.Fatal(err)
 	}
 
-	unitOfWork := infrastructure2.NewPostgresUserUnitOfWork(pool)
-	timeProvider := infrastructure2.NewRealTimeProvider()
-	uuidProvider := infrastructure2.NewRealUuidProvider()
-	hasher := infrastructure2.NewSha512Hasher()
-	salter := infrastructure2.NewRealSalter()
+	unitOfWorkStarter := infrastructure.NewPostgresUnitOfWorkStarter(pool)
+	timeProvider := infrastructure.NewRealTimeProvider()
+	uuidProvider := infrastructure.NewRealUuidProvider()
+	hasher := infrastructure.NewSha512Hasher()
+	salter := infrastructure.NewRealSalter()
+	jwtManager := infrastructure.NewRealJwtManager([]byte(cfg.Auth.Key))
 
-	service := core.NewRealService(unitOfWork, timeProvider, uuidProvider, hasher, salter)
+	service := core.NewRealService(cfg.Auth.AccessTokenLifetime, cfg.Auth.RefreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
 
 	controller := web.NewController(service)
 
 	grpcServer := BuildGrpc(controller, logger)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 1337))
+	lis, err := net.Listen("tcp", cfg.GrpcAdress)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	go func() {
-		logger.Infof("Starting server on %d", 1337)
+		logger.Info("Starting server on ", cfg.GrpcAdress)
 		if err = grpcServer.Serve(lis); err != nil {
 			log.Fatal(err)
 		}
@@ -125,8 +126,6 @@ func NewPostgresConnectionPool(ctx context.Context, cfg internal.PostgreSqlConfi
 
 func BuildGrpc(controller *web.Controller, logger *zap.SugaredLogger) *grpc.Server {
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptors.ErrorHandlingAndLogging(logger)))
-
-	//grpcServer := grpc.NewServer()
 
 	web.RegisterController(grpcServer, controller)
 

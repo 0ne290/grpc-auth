@@ -24,15 +24,27 @@ type Hasher interface {
 	Hash(saltedPassword string) string
 }
 
-type UserUnitOfWork interface {
-	Begin(ctx context.Context) (UserRepository, error)
-	Save(ctx context.Context, repository UserRepository) error
-	Rollback(ctx context.Context, repository UserRepository) error
+type UnitOfWorkStarter interface {
+	Start(ctx context.Context) (UnitOfWork, error)
+}
+
+type UnitOfWork interface {
+	UserRepository() UserRepository
+	SessionRepository() SessionRepository
+
+	Save(ctx context.Context) error
+	Rollback(ctx context.Context) error
 }
 
 type UserRepository interface {
 	TryCreate(ctx context.Context, user *entities.User) (bool, error)
 	TryGetByName(ctx context.Context, name string) (*entities.User, error)
+}
+
+type SessionRepository interface {
+	Create(ctx context.Context, session *entities.Session) error
+	TryGetByRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entities.Session, error)
+	DeleteByRefreshToken(ctx context.Context, refreshToken uuid.UUID) error
 }
 
 type JwtManager interface {

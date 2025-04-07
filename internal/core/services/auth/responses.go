@@ -5,9 +5,13 @@ type RegisterResponse struct {
 }
 
 type LoginResponse struct {
-	Token string
+	RefreshToken, AccessToken string
 }
 
-type CheckTokenResponse struct {
-	Message string
+type RefreshTokensResponse struct {
+	RefreshToken, AccessToken string
+}
+
+type CheckAccessTokenResponse struct {
+	IsActive bool
 }

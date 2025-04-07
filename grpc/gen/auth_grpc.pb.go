@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Auth_Register_FullMethodName   = "/auth.Auth/Register"
-	Auth_Login_FullMethodName      = "/auth.Auth/Login"
-	Auth_CheckToken_FullMethodName = "/auth.Auth/CheckToken"
+	Auth_Register_FullMethodName         = "/auth.Auth/Register"
+	Auth_Login_FullMethodName            = "/auth.Auth/Login"
+	Auth_RefreshTokens_FullMethodName    = "/auth.Auth/RefreshTokens"
+	Auth_CheckAccessToken_FullMethodName = "/auth.Auth/CheckAccessToken"
 )
 
 // AuthClient is the client API for Auth service.
@@ -30,7 +31,8 @@ const (
 type AuthClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	CheckToken(ctx context.Context, in *CheckTokenRequest, opts ...grpc.CallOption) (*CheckTokenResponse, error)
+	RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error)
+	CheckAccessToken(ctx context.Context, in *CheckAccessTokenRequest, opts ...grpc.CallOption) (*CheckAccessTokenResponse, error)
 }
 
 type authClient struct {
@@ -61,10 +63,20 @@ func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 	return out, nil
 }
 
-func (c *authClient) CheckToken(ctx context.Context, in *CheckTokenRequest, opts ...grpc.CallOption) (*CheckTokenResponse, error) {
+func (c *authClient) RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CheckTokenResponse)
-	err := c.cc.Invoke(ctx, Auth_CheckToken_FullMethodName, in, out, cOpts...)
+	out := new(RefreshTokensResponse)
+	err := c.cc.Invoke(ctx, Auth_RefreshTokens_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) CheckAccessToken(ctx context.Context, in *CheckAccessTokenRequest, opts ...grpc.CallOption) (*CheckAccessTokenResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CheckAccessTokenResponse)
+	err := c.cc.Invoke(ctx, Auth_CheckAccessToken_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +89,8 @@ func (c *authClient) CheckToken(ctx context.Context, in *CheckTokenRequest, opts
 type AuthServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	CheckToken(context.Context, *CheckTokenRequest) (*CheckTokenResponse, error)
+	RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error)
+	CheckAccessToken(context.Context, *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -94,8 +107,11 @@ func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*Reg
 func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedAuthServer) CheckToken(context.Context, *CheckTokenRequest) (*CheckTokenResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CheckToken not implemented")
+func (UnimplementedAuthServer) RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefreshTokens not implemented")
+}
+func (UnimplementedAuthServer) CheckAccessToken(context.Context, *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckAccessToken not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 func (UnimplementedAuthServer) testEmbeddedByValue()              {}
@@ -154,20 +170,38 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_CheckToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckTokenRequest)
+func _Auth_RefreshTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshTokensRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).CheckToken(ctx, in)
+		return srv.(AuthServer).RefreshTokens(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_CheckToken_FullMethodName,
+		FullMethod: Auth_RefreshTokens_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).CheckToken(ctx, req.(*CheckTokenRequest))
+		return srv.(AuthServer).RefreshTokens(ctx, req.(*RefreshTokensRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_CheckAccessToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckAccessTokenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).CheckAccessToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_CheckAccessToken_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).CheckAccessToken(ctx, req.(*CheckAccessTokenRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,8 +222,12 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Auth_Login_Handler,
 		},
 		{
-			MethodName: "CheckToken",
-			Handler:    _Auth_CheckToken_Handler,
+			MethodName: "RefreshTokens",
+			Handler:    _Auth_RefreshTokens_Handler,
+		},
+		{
+			MethodName: "CheckAccessToken",
+			Handler:    _Auth_CheckAccessToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
