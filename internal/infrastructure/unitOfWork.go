@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/mock"
 	"grpc-auth/internal/core/services"
 )
 
@@ -30,4 +31,32 @@ func (uow *postgresUnitOfWork) Save(ctx context.Context) error {
 
 func (uow *postgresUnitOfWork) Rollback(ctx context.Context) error {
 	return uow.transaction.Rollback(ctx)
+}
+
+type MockUnitOfWork struct {
+	mock.Mock
+}
+
+func NewMockUnitOfWork() *MockUnitOfWork {
+	return &MockUnitOfWork{}
+}
+
+func (uow *MockUnitOfWork) UserRepository() services.UserRepository {
+	args := uow.Called()
+	return args.Get(0).(services.UserRepository)
+}
+
+func (uow *MockUnitOfWork) SessionRepository() services.SessionRepository {
+	args := uow.Called()
+	return args.Get(0).(services.SessionRepository)
+}
+
+func (uow *MockUnitOfWork) Save(ctx context.Context) error {
+	args := uow.Called(ctx)
+	return args.Error(0)
+}
+
+func (uow *MockUnitOfWork) Rollback(ctx context.Context) error {
+	args := uow.Called(ctx)
+	return args.Error(0)
 }

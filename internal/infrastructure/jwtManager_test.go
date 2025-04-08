@@ -2,6 +2,7 @@ package infrastructure_test
 
 import (
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"grpc-auth/internal/core/valueObjects"
 	"grpc-auth/internal/infrastructure"
 	"testing"
@@ -20,12 +21,8 @@ func TestGenerate(t *testing.T) {
 	token, err := manager.Generate(info)
 
 	// Assert
-	if err != nil {
-		t.Fatal(err)
-	}
-	if token == "" {
-		t.Fatal("token is empty")
-	}
+	assert.NoError(t, err)
+	assert.NotEmpty(t, token)
 
 	t.Log("token: ", token)
 }
@@ -43,17 +40,11 @@ func TestParse(t *testing.T) {
 	actualInfo, err := manager.Parse(token)
 
 	// Assert
-	if err != nil {
-		t.Fatal(err)
-	}
-	if actualInfo == nil {
-		t.Fatal("actual info is nil")
-	}
+	assert.NoError(t, err)
+	assert.NotEmpty(t, actualInfo)
 
 	t.Log("expected info: ", expectedInfo)
 	t.Log("actual info: ", actualInfo)
 
-	if *actualInfo != *expectedInfo {
-		t.Fatal("actual info not equal expected info")
-	}
+	assert.Equal(t, *expectedInfo, *actualInfo)
 }

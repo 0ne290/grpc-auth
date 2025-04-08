@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/stretchr/testify/mock"
 	"grpc-auth/internal/core/entities"
 )
 
@@ -47,4 +48,20 @@ func (r *PosgresUserRepository) TryGetByName(ctx context.Context, name string) (
 	}
 
 	return user, nil
+}
+
+type MockUserRepository struct {
+	mock.Mock
+}
+
+func NewMockUserRepository() *MockUserRepository { return &MockUserRepository{} }
+
+func (r *MockUserRepository) TryCreate(ctx context.Context, user *entities.User) (bool, error) {
+	args := r.Called(ctx, user)
+	return args.Bool(0), args.Error(1)
+}
+
+func (r *MockUserRepository) TryGetByName(ctx context.Context, name string) (*entities.User, error) {
+	args := r.Called(ctx, name)
+	return args.Get(0).(*entities.User), args.Error(1)
 }

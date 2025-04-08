@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 	"grpc-auth/internal/core/valueObjects"
 	"time"
 )
@@ -52,4 +53,22 @@ func (jm *RealJwtManager) Parse(tokenString string) (*valueObjects.AuthInfo, err
 	}
 
 	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}, nil
+}
+
+type MockJwtManager struct {
+	mock.Mock
+}
+
+func NewMockJwtManager() *MockJwtManager {
+	return &MockJwtManager{}
+}
+
+func (jm *MockJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) {
+	args := jm.Called(info)
+	return args.String(0), args.Error(1)
+}
+
+func (jm *MockJwtManager) Parse(tokenString string) (*valueObjects.AuthInfo, error) {
+	args := jm.Called(tokenString)
+	return args.Get(0).(*valueObjects.AuthInfo), args.Error(1)
 }
