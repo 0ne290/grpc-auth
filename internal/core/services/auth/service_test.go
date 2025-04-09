@@ -123,3 +123,38 @@ func TestLogin(t *testing.T) {
 	sessionRepository.AssertCalled(t, "Create", ctx, session)
 	unitOfWork.AssertCalled(t, "Save", ctx)
 }
+
+func TestCheckAccessToken(t *testing.T) {
+	// Arrange
+	const accessTokenLifetime time.Duration = 0
+	const refreshTokenLifetime time.Duration = 0
+	unitOfWorkStarter := infrastructure.NewMockUnitOfWorkStarter()
+	timeProvider := infrastructure.NewMockTimeProvider()
+	uuidProvider := infrastructure.NewMockUuidProvider()
+	hasher := infrastructure.NewMockHasher()
+	salter := infrastructure.NewMockSalter()
+	jwtManager := infrastructure.NewMockJwtManager()
+
+	fakeUuid := uuid.Nil
+	older := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
+	newer := time.Date(2025, 4, 8, 14, 39, 1, 0, time.UTC)
+	authInfo := &valueObjects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: older}
+	accessToken := "Fake access token"
+
+	timeProvider.On("Now").Return(newer)
+	jwtManager.On("Parse", accessToken).Return(authInfo, nil)
+
+	request := &auth.CheckAccessTokenRequest{AccessToken: accessToken}
+	service := auth.NewRealService(accessTokenLifetime, refreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
+	expectedResponse := auth.CheckAccessTokenResponse{IsActive: false}
+
+	// Act
+	actualResponse, err := service.CheckAccessToken(request)
+	t.Log(actualResponse)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, expectedResponse, *actualResponse)
+	jwtManager.AssertCalled(t, "Parse", accessToken)
+	timeProvider.AssertCalled(t, "Now")
+}
