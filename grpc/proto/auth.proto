@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "grpc-auth/grpc/gen/auth";
+
+service Auth {
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
+  rpc CheckAccessToken (CheckAccessTokenRequest) returns (CheckAccessTokenResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  string message = 1;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string refreshToken = 1;
+  string accessToken = 2;
+}
+
+message RefreshTokensRequest {
+  string refreshToken = 1;
+}
+
+message RefreshTokensResponse {
+  string refreshToken = 1;
+  string accessToken = 2;
+}
+
+message CheckAccessTokenRequest {
+  string accessToken = 1;
+}
+
+message CheckAccessTokenResponse {
+  bool isActive = 1;
+}

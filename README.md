@@ -1,12 +1,23 @@
+# Для себя:
+
+## Команда для генерации файлов .go из .proto: protoc -I grpc/proto grpc/proto/auth.proto --go_out=grpc/gen --go_opt=paths=source_relative --go-grpc_out=grpc/gen --go-grpc_opt=paths=source_relative
+
+# Для всех:
+
 ## Как запускать:
 1. Создайте файл .env в корне проекта. Пример содержимого файла:
 ```console
 LOG_LEVEL=info
 
-LISTEN_ADDRESS=:8080
-WRITE_TIMEOUT=15s
-SERVER_NAME=homework-4
+# gRPC
+GRPC_ADDRESS=:1337
 
+# Auth
+AUTH_KEY=cryptographically_random_string_(the_longer_the_better)
+AUTH_ACCESS_TOKEN_LIFETIME=1h
+AUTH_REFRESH_TOKEN_LIFETIME=720h
+
+# PostgreSQL
 DB_HOST=postgres
 DB_PORT=5432
 DB_NAME=homework
@@ -18,8 +29,3 @@ DB_POOL_MAX_CONN_LIFETIME=300s
 DB_POOL_MAX_CONN_IDLE_TIME=150s
 ```
 2. Выполните команду docker compose up.
-
-## Приложение запустится по адресу http://localhost:8080. Спецификацию можно посмотреть по адресу http://localhost:8080/swagger.
-
-## Все эндпоинты v1/tasks защищены Bearer-авторизацией. Формат хэдера следующий: "Authorization: Bearer <UUID пользователя>".
-## Т. е. чтобы работать с тасками, сперва надо создать юзера и использовать его UUID в качестве токена Bearer-авторизации. С тасками может взаимодействовать только тот юзер, который их создал - иначе 401.

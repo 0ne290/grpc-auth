@@ -1,19 +1,32 @@
 package infrastructure
 
-import "hash"
+import (
+	"crypto/sha512"
+	"encoding/hex"
+	"github.com/stretchr/testify/mock"
+)
 
-type RealHasher struct {
-	hasher hash.Hash
+type Sha512Hasher struct{}
+
+func NewSha512Hasher() *Sha512Hasher {
+	return &Sha512Hasher{}
 }
 
-func NewRealHasher(hasher hash.Hash) *RealHasher {
-	return &RealHasher{hasher}
+func (h *Sha512Hasher) Hash(saltedPassword string) string {
+	checksum := sha512.Sum512([]byte(saltedPassword))
+
+	return hex.EncodeToString(checksum[:])
 }
 
-func (h *RealHasher) Hash(saltedPassword string) string {
-	ret := string(h.hasher.Sum([]byte(saltedPassword)))
+type MockHasher struct {
+	mock.Mock
+}
 
-	h.hasher.Reset()
+func NewMockHasher() *MockHasher {
+	return &MockHasher{}
+}
 
-	return ret
+func (h *MockHasher) Hash(saltedPassword string) string {
+	args := h.Called(saltedPassword)
+	return args.String(0)
 }
