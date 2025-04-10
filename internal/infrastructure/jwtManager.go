@@ -33,26 +33,43 @@ func (jm *RealJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) 
 	return signedToken, nil
 }
 
-func (jm *RealJwtManager) Parse(tokenString string) (*valueObjects.AuthInfo, error) {
+func (jm *RealJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return jm.key, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS512.Alg()}))
-
 	if err != nil || !token.Valid {
-		return nil, nil
+		return nil
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	userUuid, err := uuid.Parse(claims["userUuid"].(string))
-	if err != nil {
-		return nil, err
+
+	userUuidAny, ok := claims["userUuid"]
+	if !ok {
+		return nil
 	}
-	expirationAt, err := time.Parse(time.RFC3339, claims["expirationAt"].(string))
+	userUuidString, ok := userUuidAny.(string)
+	if !ok {
+		return nil
+	}
+	userUuid, err := uuid.Parse(userUuidString)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}, nil
+	expirationAtAny, ok := claims["expirationAt"]
+	if !ok {
+		return nil
+	}
+	expirationAtString, ok := expirationAtAny.(string)
+	if !ok {
+		return nil
+	}
+	expirationAt, err := time.Parse(time.RFC3339, expirationAtString)
+	if err != nil {
+		return nil
+	}
+
+	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
 }
 
 type MockJwtManager struct {
@@ -68,7 +85,7 @@ func (jm *MockJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) 
 	return args.String(0), args.Error(1)
 }
 
-func (jm *MockJwtManager) Parse(tokenString string) (*valueObjects.AuthInfo, error) {
+func (jm *MockJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
 	args := jm.Called(tokenString)
-	return args.Get(0).(*valueObjects.AuthInfo), args.Error(1)
+	return args.Get(0).(*valueObjects.AuthInfo)
 }

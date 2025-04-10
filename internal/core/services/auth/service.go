@@ -184,10 +184,7 @@ func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensR
 }
 
 func (s *RealService) CheckAccessToken(request *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error) {
-	authInfo, err := s.jwtManager.Parse(request.AccessToken)
-	if err != nil {
-		return nil, err
-	}
+	authInfo := s.jwtManager.Parse(request.AccessToken)
 	if authInfo == nil {
 		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
 	}

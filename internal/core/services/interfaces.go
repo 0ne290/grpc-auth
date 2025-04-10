@@ -49,5 +49,5 @@ type SessionRepository interface {
 
 type JwtManager interface {
 	Generate(info *valueObjects.AuthInfo) (string, error)
-	Parse(tokenString string) (*valueObjects.AuthInfo, error)
+	Parse(tokenString string) *valueObjects.AuthInfo
 }

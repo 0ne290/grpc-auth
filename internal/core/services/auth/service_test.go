@@ -142,7 +142,7 @@ func TestCheckAccessToken(t *testing.T) {
 	accessToken := "Fake access token"
 
 	timeProvider.On("Now").Return(newer)
-	jwtManager.On("Parse", accessToken).Return(authInfo, nil)
+	jwtManager.On("Parse", accessToken).Return(authInfo)
 
 	request := &auth.CheckAccessTokenRequest{AccessToken: accessToken}
 	service := auth.NewRealService(accessTokenLifetime, refreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
