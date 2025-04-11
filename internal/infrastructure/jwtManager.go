@@ -4,7 +4,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
-	"grpc-auth/internal/core/valueObjects"
+	"grpc-auth/internal/core/value-objects"
 	"time"
 )
 
@@ -16,7 +16,7 @@ func NewRealJwtManager(key []byte) *RealJwtManager {
 	return &RealJwtManager{key}
 }
 
-func (jm *RealJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) {
+func (jm *RealJwtManager) Generate(info *value_objects.AuthInfo) (string, error) {
 	token := jwt.NewWithClaims(
 		jwt.SigningMethodHS512,
 		jwt.MapClaims{
@@ -33,7 +33,7 @@ func (jm *RealJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) 
 	return signedToken, nil
 }
 
-func (jm *RealJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
+func (jm *RealJwtManager) Parse(tokenString string) *value_objects.AuthInfo {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return jm.key, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS512.Alg()}))
@@ -69,7 +69,7 @@ func (jm *RealJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
 		return nil
 	}
 
-	return &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
+	return &value_objects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
 }
 
 type MockJwtManager struct {
@@ -80,12 +80,12 @@ func NewMockJwtManager() *MockJwtManager {
 	return &MockJwtManager{}
 }
 
-func (jm *MockJwtManager) Generate(info *valueObjects.AuthInfo) (string, error) {
+func (jm *MockJwtManager) Generate(info *value_objects.AuthInfo) (string, error) {
 	args := jm.Called(info)
 	return args.String(0), args.Error(1)
 }
 
-func (jm *MockJwtManager) Parse(tokenString string) *valueObjects.AuthInfo {
+func (jm *MockJwtManager) Parse(tokenString string) *value_objects.AuthInfo {
 	args := jm.Called(tokenString)
-	return args.Get(0).(*valueObjects.AuthInfo)
+	return args.Get(0).(*value_objects.AuthInfo)
 }

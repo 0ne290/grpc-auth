@@ -3,7 +3,7 @@ package infrastructure_test
 import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"grpc-auth/internal/core/valueObjects"
+	"grpc-auth/internal/core/value-objects"
 	"grpc-auth/internal/infrastructure"
 	"testing"
 	"time"
@@ -14,7 +14,7 @@ func TestGenerate(t *testing.T) {
 	key := []byte("123_secret_321")
 	userUuid, _ := uuid.Parse("e631182f-2be6-4b24-84a9-339881d1c89b")
 	expirationAt := time.Date(1986, time.April, 26, 1, 23, 47, 0, time.UTC)
-	info := &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
+	info := &value_objects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
 	manager := infrastructure.NewRealJwtManager(key)
 
 	// Act
@@ -32,7 +32,7 @@ func TestParse(t *testing.T) {
 	key := []byte("123_secret_321")
 	userUuid, _ := uuid.Parse("e631182f-2be6-4b24-84a9-339881d1c89b")
 	expirationAt := time.Date(1986, time.April, 26, 1, 23, 47, 0, time.UTC)
-	expectedInfo := &valueObjects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
+	expectedInfo := &value_objects.AuthInfo{UserUuid: userUuid, ExpirationAt: expirationAt}
 	manager := infrastructure.NewRealJwtManager(key)
 	token, _ := manager.Generate(expectedInfo)
 

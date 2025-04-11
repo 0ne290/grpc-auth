@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"grpc-auth/internal/core/entities"
-	"grpc-auth/internal/core/valueObjects"
+	"grpc-auth/internal/core/value-objects"
 	"time"
 )
 
@@ -39,6 +39,8 @@ type UnitOfWork interface {
 type UserRepository interface {
 	TryCreate(ctx context.Context, user *entities.User) (bool, error)
 	TryGetByName(ctx context.Context, name string) (*entities.User, error)
+	TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error)
+	Exists(ctx context.Context, userUuid uuid.UUID) (bool, error)
 }
 
 type SessionRepository interface {
@@ -48,6 +50,6 @@ type SessionRepository interface {
 }
 
 type JwtManager interface {
-	Generate(info *valueObjects.AuthInfo) (string, error)
-	Parse(tokenString string) *valueObjects.AuthInfo
+	Generate(info *value_objects.AuthInfo) (string, error)
+	Parse(tokenString string) *value_objects.AuthInfo
 }
