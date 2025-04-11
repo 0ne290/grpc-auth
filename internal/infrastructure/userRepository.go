@@ -52,15 +52,14 @@ func (r *PosgresUserRepository) TryGetByName(ctx context.Context, name string) (
 }
 
 func (r *PosgresUserRepository) TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error) {
-	const query string = "SELECT EXISTS(DELETE FROM users WHERE uuid = $1 RETURNING TRUE)"
+	const query string = "DELETE FROM users WHERE uuid = $1"
 
-	var deleted bool
-	err := r.transaction.QueryRow(ctx, query, userUuid).Scan(&deleted)
+	commandTag, err := r.transaction.Exec(ctx, query, userUuid)
 	if err != nil {
 		return false, err
 	}
 
-	return deleted, nil
+	return commandTag.RowsAffected() != 0, nil
 }
 
 func (r *PosgresUserRepository) Exists(ctx context.Context, userUuid uuid.UUID) (bool, error) {
