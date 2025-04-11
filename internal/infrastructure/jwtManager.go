@@ -33,7 +33,7 @@ func (jm *RealJwtManager) Generate(info *value_objects.AuthInfo) (string, error)
 	return signedToken, nil
 }
 
-func (jm *RealJwtManager) Parse(tokenString string) *value_objects.AuthInfo {
+func (jm *RealJwtManager) TryParse(tokenString string) *value_objects.AuthInfo {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return jm.key, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS512.Alg()}))
@@ -85,7 +85,7 @@ func (jm *MockJwtManager) Generate(info *value_objects.AuthInfo) (string, error)
 	return args.String(0), args.Error(1)
 }
 
-func (jm *MockJwtManager) Parse(tokenString string) *value_objects.AuthInfo {
+func (jm *MockJwtManager) TryParse(tokenString string) *value_objects.AuthInfo {
 	args := jm.Called(tokenString)
 	return args.Get(0).(*value_objects.AuthInfo)
 }

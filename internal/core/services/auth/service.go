@@ -116,7 +116,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 }
 
 func (s *RealService) DeleteUser(ctx context.Context, request *DeleteUserRequest) (*DeleteUserResponse, error) {
-	authInfo := s.jwtManager.Parse(request.AccessToken)
+	authInfo := s.jwtManager.TryParse(request.AccessToken)
 	if authInfo == nil {
 		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
 	}
@@ -152,6 +152,144 @@ func (s *RealService) DeleteUser(ctx context.Context, request *DeleteUserRequest
 	return &DeleteUserResponse{"user deleted"}, nil
 }
 
+func (s *RealService) DeleteSession(ctx context.Context, request *DeleteSessionRequest) (*DeleteSessionResponse, error) {
+	refreshToken, err := uuid.Parse(request.RefreshToken)
+	if err != nil {
+		return nil, &services.InvariantViolationError{Message: "refresh token format is invalid"}
+	}
+
+	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	sessionRepository := unitOfWork.SessionRepository()
+
+	deleted, err := sessionRepository.TryDelete(ctx, refreshToken)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+
+	if !deleted {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "session not found"}
+	}
+
+	err = unitOfWork.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DeleteSessionResponse{"session deleted"}, nil
+}
+
+func (s *RealService) ChangeName(ctx context.Context, request *ChangeNameRequest) (*ChangeNameResponse, error) {
+	authInfo := s.jwtManager.TryParse(request.AccessToken)
+	if authInfo == nil {
+		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
+	}
+
+	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
+		return nil, &services.InvariantViolationError{Message: "access token is expired"}
+	}
+
+	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userRepository := unitOfWork.UserRepository()
+
+	user, err := userRepository.TryGetByUuid(ctx, authInfo.UserUuid)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+	if user == nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "user not found"}
+	}
+
+	user.Name = request.NewName
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.NewPassword)
+	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	user.Password = hashOfSaltedPassword
+
+	updated, err := userRepository.TryUpdate(ctx, user)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+	if !updated {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	err = unitOfWork.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChangeNameResponse{"name updated"}, nil
+}
+
+func (s *RealService) ChangePassword(ctx context.Context, request *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+	authInfo := s.jwtManager.TryParse(request.AccessToken)
+	if authInfo == nil {
+		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
+	}
+
+	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
+		return nil, &services.InvariantViolationError{Message: "access token is expired"}
+	}
+
+	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userRepository := unitOfWork.UserRepository()
+
+	user, err := userRepository.TryGetByUuid(ctx, authInfo.UserUuid)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+	if user == nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "user not found"}
+	}
+
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.NewPassword)
+	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	user.Password = hashOfSaltedPassword
+
+	updated, err := userRepository.TryUpdate(ctx, user)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+	if !updated {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	err = unitOfWork.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChangePasswordResponse{"password updated"}, nil
+}
+
 func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensRequest) (*RefreshTokensResponse, error) {
 	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
 	if err != nil {
@@ -178,7 +316,7 @@ func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensR
 		return nil, &services.InvariantViolationError{Message: "refresh token does not exists"}
 	}
 
-	err = sessionRepository.DeleteByRefreshToken(ctx, refreshToken)
+	err = sessionRepository.Delete(ctx, refreshToken)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
@@ -221,7 +359,7 @@ func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensR
 }
 
 func (s *RealService) CheckAccessToken(ctx context.Context, request *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error) {
-	authInfo := s.jwtManager.Parse(request.AccessToken)
+	authInfo := s.jwtManager.TryParse(request.AccessToken)
 	if authInfo == nil {
 		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
 	}

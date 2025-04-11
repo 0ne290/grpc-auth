@@ -38,7 +38,9 @@ type UnitOfWork interface {
 
 type UserRepository interface {
 	TryCreate(ctx context.Context, user *entities.User) (bool, error)
+	TryUpdate(ctx context.Context, user *entities.User) (bool, error)
 	TryGetByName(ctx context.Context, name string) (*entities.User, error)
+	TryGetByUuid(ctx context.Context, userUuid uuid.UUID) (*entities.User, error)
 	TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error)
 	Exists(ctx context.Context, userUuid uuid.UUID) (bool, error)
 }
@@ -46,10 +48,11 @@ type UserRepository interface {
 type SessionRepository interface {
 	Create(ctx context.Context, session *entities.Session) error
 	TryGetByRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entities.Session, error)
-	DeleteByRefreshToken(ctx context.Context, refreshToken uuid.UUID) error
+	Delete(ctx context.Context, refreshToken uuid.UUID) error
+	TryDelete(ctx context.Context, refreshToken uuid.UUID) (bool, error)
 }
 
 type JwtManager interface {
 	Generate(info *value_objects.AuthInfo) (string, error)
-	Parse(tokenString string) *value_objects.AuthInfo
+	TryParse(tokenString string) *value_objects.AuthInfo
 }

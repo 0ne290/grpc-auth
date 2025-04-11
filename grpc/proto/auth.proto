@@ -9,7 +9,7 @@ service Auth {
   rpc Login (LoginRequest) returns (LoginResponse);
   rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
   rpc DeleteSession (DeleteSessionRequest) returns (DeleteSessionResponse);
-  rpc ChangeLogin (ChangeLoginRequest) returns (ChangeLoginResponse);
+  rpc ChangeName (ChangeNameRequest) returns (ChangeNameResponse);
   rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse);
   rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
   rpc CheckAccessToken (CheckAccessTokenRequest) returns (CheckAccessTokenResponse);
@@ -35,7 +35,8 @@ message LoginResponse {
 }
 
 message DeleteUserRequest {
-  string accessToken = 1;
+  string username = 1;
+  string password = 2;
 }
 
 message DeleteUserResponse {
@@ -43,25 +44,29 @@ message DeleteUserResponse {
 }
 
 message DeleteSessionRequest {
-  string refreshToken = 1;
+  string username = 1;
+  string password = 2;
+  string refreshToken = 3;
 }
 
 message DeleteSessionResponse {
   string message = 1;
 }
 
-message ChangeLoginRequest {
-  string accessToken = 1;
-  string newLogin = 2;
+message ChangeNameRequest {
+  string username = 1;
+  string password = 2;
+  string newName = 3;
 }
 
-message ChangeLoginResponse {
+message ChangeNameResponse {
   string message = 1;
 }
 
 message ChangePasswordRequest {
-  string accessToken = 1;
-  string newPassword = 2;
+  string username = 1;
+  string password = 2;
+  string newPassword = 3;
 }
 
 message ChangePasswordResponse {

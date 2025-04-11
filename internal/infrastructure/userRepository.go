@@ -34,12 +34,45 @@ func (r *PosgresUserRepository) TryCreate(ctx context.Context, user *entities.Us
 	return true, nil
 }
 
+func (r *PosgresUserRepository) TryUpdate(ctx context.Context, user *entities.User) (bool, error) {
+	const query string = "UPDATE users SET name = $2, password = $3 WHERE uuid = $1"
+
+	_, err := r.transaction.Exec(ctx, query, user.Uuid, user.Name, user.Password)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { // Check unique_violation PostgreSQL error
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *PosgresUserRepository) TryGetByName(ctx context.Context, name string) (*entities.User, error) {
 	const query string = "SELECT * FROM users WHERE name = $1 FOR UPDATE"
 
 	user := &entities.User{}
 
 	err := r.transaction.QueryRow(ctx, query, name).Scan(&user.Uuid, &user.CreatedAt, &user.Name, &user.Password)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *PosgresUserRepository) TryGetByUuid(ctx context.Context, userUuid uuid.UUID) (*entities.User, error) {
+	const query string = "SELECT * FROM users WHERE uuid = $1 FOR UPDATE"
+
+	user := &entities.User{}
+
+	err := r.transaction.QueryRow(ctx, query, userUuid).Scan(&user.Uuid, &user.CreatedAt, &user.Name, &user.Password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil

@@ -144,7 +144,7 @@ func Test_CheckAccessToken_ExpirationAtIsInvalid(t *testing.T) {
 	ctx := context.TODO()
 
 	timeProvider.On("Now").Return(newer)
-	jwtManager.On("Parse", accessToken).Return(authInfo)
+	jwtManager.On("TryParse", accessToken).Return(authInfo)
 
 	request := &auth.CheckAccessTokenRequest{AccessToken: accessToken}
 	service := auth.NewRealService(accessTokenLifetime, refreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
@@ -158,7 +158,7 @@ func Test_CheckAccessToken_ExpirationAtIsInvalid(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, *actualResponse)
-	jwtManager.AssertCalled(t, "Parse", accessToken)
+	jwtManager.AssertCalled(t, "TryParse", accessToken)
 	timeProvider.AssertCalled(t, "Now")
 }
 
@@ -184,7 +184,7 @@ func Test_CheckAccessToken_UserUuidIsInvalid(t *testing.T) {
 	ctx := context.TODO()
 
 	timeProvider.On("Now").Return(fakeNow)
-	jwtManager.On("Parse", accessToken).Return(authInfo)
+	jwtManager.On("TryParse", accessToken).Return(authInfo)
 	unitOfWorkStarter.On("Start", ctx).Return(unitOfWork, nil)
 	unitOfWork.On("UserRepository").Return(userRepository)
 	unitOfWork.On("Rollback", ctx).Return(nil)
@@ -201,7 +201,7 @@ func Test_CheckAccessToken_UserUuidIsInvalid(t *testing.T) {
 	// Assert
 	assert.Error(t, err)
 	assert.Empty(t, actualResponse)
-	jwtManager.AssertCalled(t, "Parse", accessToken)
+	jwtManager.AssertCalled(t, "TryParse", accessToken)
 	timeProvider.AssertCalled(t, "Now")
 	unitOfWorkStarter.AssertCalled(t, "Start", ctx)
 	unitOfWork.AssertCalled(t, "UserRepository")
@@ -231,7 +231,7 @@ func Test_CheckAccessToken_IsValid(t *testing.T) {
 	ctx := context.TODO()
 
 	timeProvider.On("Now").Return(fakeNow)
-	jwtManager.On("Parse", accessToken).Return(authInfo)
+	jwtManager.On("TryParse", accessToken).Return(authInfo)
 	unitOfWorkStarter.On("Start", ctx).Return(unitOfWork, nil)
 	unitOfWork.On("UserRepository").Return(userRepository)
 	unitOfWork.On("Save", ctx).Return(nil)
@@ -249,7 +249,7 @@ func Test_CheckAccessToken_IsValid(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, *actualResponse)
-	jwtManager.AssertCalled(t, "Parse", accessToken)
+	jwtManager.AssertCalled(t, "TryParse", accessToken)
 	timeProvider.AssertCalled(t, "Now")
 	unitOfWorkStarter.AssertCalled(t, "Start", ctx)
 	unitOfWork.AssertCalled(t, "UserRepository")

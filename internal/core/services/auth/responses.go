@@ -12,6 +12,18 @@ type DeleteUserResponse struct {
 	Message string
 }
 
+type DeleteSessionResponse struct {
+	Message string
+}
+
+type ChangeNameResponse struct {
+	Message string
+}
+
+type ChangePasswordResponse struct {
+	Message string
+}
+
 type RefreshTokensResponse struct {
 	RefreshToken, AccessToken string
 }
