@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/mock"
@@ -50,6 +51,30 @@ func (r *PosgresUserRepository) TryGetByName(ctx context.Context, name string) (
 	return user, nil
 }
 
+func (r *PosgresUserRepository) TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error) {
+	const query string = "SELECT EXISTS(DELETE FROM users WHERE uuid = $1 RETURNING TRUE)"
+
+	var deleted bool
+	err := r.transaction.QueryRow(ctx, query, userUuid).Scan(&deleted)
+	if err != nil {
+		return false, err
+	}
+
+	return deleted, nil
+}
+
+func (r *PosgresUserRepository) Exists(ctx context.Context, userUuid uuid.UUID) (bool, error) {
+	const query string = "SELECT EXISTS(SELECT 1 FROM users WHERE uuid = $1)"
+
+	var exists bool
+	err := r.transaction.QueryRow(ctx, query, userUuid).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
 type MockUserRepository struct {
 	mock.Mock
 }
@@ -64,4 +89,14 @@ func (r *MockUserRepository) TryCreate(ctx context.Context, user *entities.User)
 func (r *MockUserRepository) TryGetByName(ctx context.Context, name string) (*entities.User, error) {
 	args := r.Called(ctx, name)
 	return args.Get(0).(*entities.User), args.Error(1)
+}
+
+func (r *MockUserRepository) TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error) {
+	args := r.Called(ctx, userUuid)
+	return args.Bool(0), args.Error(1)
+}
+
+func (r *MockUserRepository) Exists(ctx context.Context, userUuid uuid.UUID) (bool, error) {
+	args := r.Called(ctx, userUuid)
+	return args.Bool(0), args.Error(1)
 }

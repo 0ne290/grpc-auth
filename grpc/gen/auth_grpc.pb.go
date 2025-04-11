@@ -21,6 +21,10 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	Auth_Register_FullMethodName         = "/auth.Auth/Register"
 	Auth_Login_FullMethodName            = "/auth.Auth/Login"
+	Auth_DeleteUser_FullMethodName       = "/auth.Auth/DeleteUser"
+	Auth_DeleteSession_FullMethodName    = "/auth.Auth/DeleteSession"
+	Auth_ChangeLogin_FullMethodName      = "/auth.Auth/ChangeLogin"
+	Auth_ChangePassword_FullMethodName   = "/auth.Auth/ChangePassword"
 	Auth_RefreshTokens_FullMethodName    = "/auth.Auth/RefreshTokens"
 	Auth_CheckAccessToken_FullMethodName = "/auth.Auth/CheckAccessToken"
 )
@@ -31,6 +35,10 @@ const (
 type AuthClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
+	DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error)
+	ChangeLogin(ctx context.Context, in *ChangeLoginRequest, opts ...grpc.CallOption) (*ChangeLoginResponse, error)
+	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
 	RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error)
 	CheckAccessToken(ctx context.Context, in *CheckAccessTokenRequest, opts ...grpc.CallOption) (*CheckAccessTokenResponse, error)
 }
@@ -63,6 +71,46 @@ func (c *authClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.C
 	return out, nil
 }
 
+func (c *authClient) DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteUserResponse)
+	err := c.cc.Invoke(ctx, Auth_DeleteUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteSessionResponse)
+	err := c.cc.Invoke(ctx, Auth_DeleteSession_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ChangeLogin(ctx context.Context, in *ChangeLoginRequest, opts ...grpc.CallOption) (*ChangeLoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangeLoginResponse)
+	err := c.cc.Invoke(ctx, Auth_ChangeLogin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ChangePasswordResponse)
+	err := c.cc.Invoke(ctx, Auth_ChangePassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authClient) RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RefreshTokensResponse)
@@ -89,6 +137,10 @@ func (c *authClient) CheckAccessToken(ctx context.Context, in *CheckAccessTokenR
 type AuthServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
+	DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error)
+	ChangeLogin(context.Context, *ChangeLoginRequest) (*ChangeLoginResponse, error)
+	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error)
 	CheckAccessToken(context.Context, *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error)
 	mustEmbedUnimplementedAuthServer()
@@ -106,6 +158,18 @@ func (UnimplementedAuthServer) Register(context.Context, *RegisterRequest) (*Reg
 }
 func (UnimplementedAuthServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedAuthServer) DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
+}
+func (UnimplementedAuthServer) DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSession not implemented")
+}
+func (UnimplementedAuthServer) ChangeLogin(context.Context, *ChangeLoginRequest) (*ChangeLoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeLogin not implemented")
+}
+func (UnimplementedAuthServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
 }
 func (UnimplementedAuthServer) RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RefreshTokens not implemented")
@@ -170,6 +234,78 @@ func _Auth_Login_Handler(srv interface{}, ctx context.Context, dec func(interfac
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_DeleteUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).DeleteUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_DeleteUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).DeleteUser(ctx, req.(*DeleteUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_DeleteSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).DeleteSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_DeleteSession_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).DeleteSession(ctx, req.(*DeleteSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ChangeLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ChangeLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ChangeLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ChangeLogin(ctx, req.(*ChangeLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_ChangePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).ChangePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Auth_ChangePassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).ChangePassword(ctx, req.(*ChangePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Auth_RefreshTokens_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RefreshTokensRequest)
 	if err := dec(in); err != nil {
@@ -220,6 +356,22 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _Auth_Login_Handler,
+		},
+		{
+			MethodName: "DeleteUser",
+			Handler:    _Auth_DeleteUser_Handler,
+		},
+		{
+			MethodName: "DeleteSession",
+			Handler:    _Auth_DeleteSession_Handler,
+		},
+		{
+			MethodName: "ChangeLogin",
+			Handler:    _Auth_ChangeLogin_Handler,
+		},
+		{
+			MethodName: "ChangePassword",
+			Handler:    _Auth_ChangePassword_Handler,
 		},
 		{
 			MethodName: "RefreshTokens",

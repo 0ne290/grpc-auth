@@ -64,6 +64,28 @@ func mapLoginResponse(source *service.LoginResponse) *auth.LoginResponse {
 	return &auth.LoginResponse{RefreshToken: source.RefreshToken, AccessToken: source.AccessToken}
 }
 
+func (s *Controller) DeleteUser(ctx context.Context, req *auth.DeleteUserRequest) (*auth.DeleteUserResponse, error) {
+	ret, err := s.service.DeleteUser(ctx, mapDeleteUserRequest(req))
+
+	return mapDeleteUserResponse(ret), err
+}
+
+func mapDeleteUserRequest(source *auth.DeleteUserRequest) *service.DeleteUserRequest {
+	if source == nil {
+		return nil
+	}
+
+	return &service.DeleteUserRequest{AccessToken: source.AccessToken}
+}
+
+func mapDeleteUserResponse(source *service.DeleteUserResponse) *auth.DeleteUserResponse {
+	if source == nil {
+		return nil
+	}
+
+	return &auth.DeleteUserResponse{Message: source.Message}
+}
+
 func (s *Controller) RefreshTokens(ctx context.Context, req *auth.RefreshTokensRequest) (*auth.RefreshTokensResponse, error) {
 	ret, err := s.service.RefreshTokens(ctx, mapRefreshTokensRequest(req))
 
@@ -86,8 +108,8 @@ func mapRefreshTokensResponse(source *service.RefreshTokensResponse) *auth.Refre
 	return &auth.RefreshTokensResponse{RefreshToken: source.RefreshToken, AccessToken: source.AccessToken}
 }
 
-func (s *Controller) CheckAccessToken(_ context.Context, req *auth.CheckAccessTokenRequest) (*auth.CheckAccessTokenResponse, error) {
-	ret, err := s.service.CheckAccessToken(mapCheckAccessTokenRequest(req))
+func (s *Controller) CheckAccessToken(ctx context.Context, req *auth.CheckAccessTokenRequest) (*auth.CheckAccessTokenResponse, error) {
+	ret, err := s.service.CheckAccessToken(ctx, mapCheckAccessTokenRequest(req))
 
 	return mapCheckAccessTokenResponse(ret), err
 }

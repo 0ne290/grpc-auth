@@ -7,6 +7,10 @@ option go_package = "grpc-auth/grpc/gen/auth";
 service Auth {
   rpc Register (RegisterRequest) returns (RegisterResponse);
   rpc Login (LoginRequest) returns (LoginResponse);
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+  rpc DeleteSession (DeleteSessionRequest) returns (DeleteSessionResponse);
+  rpc ChangeLogin (ChangeLoginRequest) returns (ChangeLoginResponse);
+  rpc ChangePassword (ChangePasswordRequest) returns (ChangePasswordResponse);
   rpc RefreshTokens (RefreshTokensRequest) returns (RefreshTokensResponse);
   rpc CheckAccessToken (CheckAccessTokenRequest) returns (CheckAccessTokenResponse);
 }
@@ -28,6 +32,40 @@ message LoginRequest {
 message LoginResponse {
   string refreshToken = 1;
   string accessToken = 2;
+}
+
+message DeleteUserRequest {
+  string accessToken = 1;
+}
+
+message DeleteUserResponse {
+  string message = 1;
+}
+
+message DeleteSessionRequest {
+  string refreshToken = 1;
+}
+
+message DeleteSessionResponse {
+  string message = 1;
+}
+
+message ChangeLoginRequest {
+  string accessToken = 1;
+  string newLogin = 2;
+}
+
+message ChangeLoginResponse {
+  string message = 1;
+}
+
+message ChangePasswordRequest {
+  string accessToken = 1;
+  string newPassword = 2;
+}
+
+message ChangePasswordResponse {
+  string message = 1;
 }
 
 message RefreshTokensRequest {

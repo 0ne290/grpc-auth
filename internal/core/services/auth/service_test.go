@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"grpc-auth/internal/core/entities"
 	"grpc-auth/internal/core/services/auth"
-	"grpc-auth/internal/core/valueObjects"
+	"grpc-auth/internal/core/value-objects"
 	"grpc-auth/internal/infrastructure"
 	"testing"
 	"time"
@@ -85,7 +85,7 @@ func TestLogin(t *testing.T) {
 	userPassword := saltedPassword + "hash"
 	user := entities.NewUser(fakeUuid, fakeNow, userName, userPassword)
 	session := entities.NewSession(fakeUuid, fakeUuid, fakeNow)
-	authInfo := &valueObjects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: fakeNow}
+	authInfo := &value_objects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: fakeNow}
 	accessToken := "Fake access token"
 	ctx := context.TODO()
 
@@ -124,11 +124,12 @@ func TestLogin(t *testing.T) {
 	unitOfWork.AssertCalled(t, "Save", ctx)
 }
 
-func TestCheckAccessToken(t *testing.T) {
+func Test_CheckAccessToken_ExpirationAtIsInvalid(t *testing.T) {
 	// Arrange
 	const accessTokenLifetime time.Duration = 0
 	const refreshTokenLifetime time.Duration = 0
 	unitOfWorkStarter := infrastructure.NewMockUnitOfWorkStarter()
+
 	timeProvider := infrastructure.NewMockTimeProvider()
 	uuidProvider := infrastructure.NewMockUuidProvider()
 	hasher := infrastructure.NewMockHasher()
@@ -138,8 +139,9 @@ func TestCheckAccessToken(t *testing.T) {
 	fakeUuid := uuid.Nil
 	older := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
 	newer := time.Date(2025, 4, 8, 14, 39, 1, 0, time.UTC)
-	authInfo := &valueObjects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: older}
+	authInfo := &value_objects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: older}
 	accessToken := "Fake access token"
+	ctx := context.TODO()
 
 	timeProvider.On("Now").Return(newer)
 	jwtManager.On("Parse", accessToken).Return(authInfo)
@@ -149,12 +151,108 @@ func TestCheckAccessToken(t *testing.T) {
 	expectedResponse := auth.CheckAccessTokenResponse{IsActive: false}
 
 	// Act
-	actualResponse, err := service.CheckAccessToken(request)
+	actualResponse, err := service.CheckAccessToken(ctx, request)
 	t.Log(actualResponse)
+	t.Log(err)
 
 	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, *actualResponse)
 	jwtManager.AssertCalled(t, "Parse", accessToken)
 	timeProvider.AssertCalled(t, "Now")
+}
+
+func Test_CheckAccessToken_UserUuidIsInvalid(t *testing.T) {
+	// Arrange
+	const accessTokenLifetime time.Duration = 0
+	const refreshTokenLifetime time.Duration = 0
+	unitOfWorkStarter := infrastructure.NewMockUnitOfWorkStarter()
+	unitOfWork := infrastructure.NewMockUnitOfWork()
+	userRepository := infrastructure.NewMockUserRepository()
+
+	timeProvider := infrastructure.NewMockTimeProvider()
+	uuidProvider := infrastructure.NewMockUuidProvider()
+	hasher := infrastructure.NewMockHasher()
+	salter := infrastructure.NewMockSalter()
+	jwtManager := infrastructure.NewMockJwtManager()
+
+	fakeUuid := uuid.Nil
+	fakeExpirationAt := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
+	fakeNow := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
+	authInfo := &value_objects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: fakeExpirationAt}
+	accessToken := "Fake access token"
+	ctx := context.TODO()
+
+	timeProvider.On("Now").Return(fakeNow)
+	jwtManager.On("Parse", accessToken).Return(authInfo)
+	unitOfWorkStarter.On("Start", ctx).Return(unitOfWork, nil)
+	unitOfWork.On("UserRepository").Return(userRepository)
+	unitOfWork.On("Rollback", ctx).Return(nil)
+	userRepository.On("Exists", ctx, fakeUuid).Return(false, nil)
+
+	request := &auth.CheckAccessTokenRequest{AccessToken: accessToken}
+	service := auth.NewRealService(accessTokenLifetime, refreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
+
+	// Act
+	actualResponse, err := service.CheckAccessToken(ctx, request)
+	t.Log(actualResponse)
+	t.Log(err)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Empty(t, actualResponse)
+	jwtManager.AssertCalled(t, "Parse", accessToken)
+	timeProvider.AssertCalled(t, "Now")
+	unitOfWorkStarter.AssertCalled(t, "Start", ctx)
+	unitOfWork.AssertCalled(t, "UserRepository")
+	userRepository.AssertCalled(t, "Exists", ctx, fakeUuid)
+	unitOfWork.AssertCalled(t, "Rollback", ctx)
+}
+
+func Test_CheckAccessToken_IsValid(t *testing.T) {
+	// Arrange
+	const accessTokenLifetime time.Duration = 0
+	const refreshTokenLifetime time.Duration = 0
+	unitOfWorkStarter := infrastructure.NewMockUnitOfWorkStarter()
+	unitOfWork := infrastructure.NewMockUnitOfWork()
+	userRepository := infrastructure.NewMockUserRepository()
+
+	timeProvider := infrastructure.NewMockTimeProvider()
+	uuidProvider := infrastructure.NewMockUuidProvider()
+	hasher := infrastructure.NewMockHasher()
+	salter := infrastructure.NewMockSalter()
+	jwtManager := infrastructure.NewMockJwtManager()
+
+	fakeUuid := uuid.Nil
+	fakeExpirationAt := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
+	fakeNow := time.Date(2025, 4, 8, 14, 39, 0, 0, time.UTC)
+	authInfo := &value_objects.AuthInfo{UserUuid: fakeUuid, ExpirationAt: fakeExpirationAt}
+	accessToken := "Fake access token"
+	ctx := context.TODO()
+
+	timeProvider.On("Now").Return(fakeNow)
+	jwtManager.On("Parse", accessToken).Return(authInfo)
+	unitOfWorkStarter.On("Start", ctx).Return(unitOfWork, nil)
+	unitOfWork.On("UserRepository").Return(userRepository)
+	unitOfWork.On("Save", ctx).Return(nil)
+	userRepository.On("Exists", ctx, fakeUuid).Return(true, nil)
+
+	request := &auth.CheckAccessTokenRequest{AccessToken: accessToken}
+	service := auth.NewRealService(accessTokenLifetime, refreshTokenLifetime, unitOfWorkStarter, timeProvider, uuidProvider, hasher, salter, jwtManager)
+	expectedResponse := auth.CheckAccessTokenResponse{IsActive: true}
+
+	// Act
+	actualResponse, err := service.CheckAccessToken(ctx, request)
+	t.Log(actualResponse)
+	t.Log(err)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Equal(t, expectedResponse, *actualResponse)
+	jwtManager.AssertCalled(t, "Parse", accessToken)
+	timeProvider.AssertCalled(t, "Now")
+	unitOfWorkStarter.AssertCalled(t, "Start", ctx)
+	unitOfWork.AssertCalled(t, "UserRepository")
+	userRepository.AssertCalled(t, "Exists", ctx, fakeUuid)
+	unitOfWork.AssertCalled(t, "Save", ctx)
 }

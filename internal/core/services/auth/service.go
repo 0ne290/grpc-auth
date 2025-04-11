@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"grpc-auth/internal/core/entities"
 	"grpc-auth/internal/core/services"
-	"grpc-auth/internal/core/valueObjects"
+	"grpc-auth/internal/core/value-objects"
 	"time"
 )
 
@@ -89,7 +89,7 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 
 	now := s.timeProvider.Now()
 
-	authInfo := &valueObjects.AuthInfo{UserUuid: user.Uuid, ExpirationAt: now.Add(s.accessTokenLifetime)}
+	authInfo := &value_objects.AuthInfo{UserUuid: user.Uuid, ExpirationAt: now.Add(s.accessTokenLifetime)}
 	accessToken, err := s.jwtManager.Generate(authInfo)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
@@ -113,6 +113,43 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	}
 
 	return &LoginResponse{refreshToken.String(), accessToken}, nil
+}
+
+func (s *RealService) DeleteUser(ctx context.Context, request *DeleteUserRequest) (*DeleteUserResponse, error) {
+	authInfo := s.jwtManager.Parse(request.AccessToken)
+	if authInfo == nil {
+		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
+	}
+
+	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
+		return nil, &services.InvariantViolationError{Message: "access token is expired"}
+	}
+
+	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userRepository := unitOfWork.UserRepository()
+
+	deleted, err := userRepository.TryDelete(ctx, authInfo.UserUuid)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+
+	if !deleted {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "user not found"}
+	}
+
+	err = unitOfWork.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DeleteUserResponse{"user deleted"}, nil
 }
 
 func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensRequest) (*RefreshTokensResponse, error) {
@@ -167,7 +204,7 @@ func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensR
 		return nil, err
 	}
 
-	authInfo := &valueObjects.AuthInfo{UserUuid: session.UserUuid, ExpirationAt: now.Add(s.accessTokenLifetime)}
+	authInfo := &value_objects.AuthInfo{UserUuid: session.UserUuid, ExpirationAt: now.Add(s.accessTokenLifetime)}
 	accessToken, err := s.jwtManager.Generate(authInfo)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
@@ -183,7 +220,7 @@ func (s *RealService) RefreshTokens(ctx context.Context, request *RefreshTokensR
 	return &RefreshTokensResponse{refreshToken.String(), accessToken}, nil
 }
 
-func (s *RealService) CheckAccessToken(request *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error) {
+func (s *RealService) CheckAccessToken(ctx context.Context, request *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error) {
 	authInfo := s.jwtManager.Parse(request.AccessToken)
 	if authInfo == nil {
 		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
@@ -191,6 +228,30 @@ func (s *RealService) CheckAccessToken(request *CheckAccessTokenRequest) (*Check
 
 	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
 		return &CheckAccessTokenResponse{false}, nil
+	}
+
+	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userRepository := unitOfWork.UserRepository()
+
+	exists, err := userRepository.Exists(ctx, authInfo.UserUuid)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+
+	if !exists {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "user not found"}
+	}
+
+	err = unitOfWork.Save(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	return &CheckAccessTokenResponse{true}, nil

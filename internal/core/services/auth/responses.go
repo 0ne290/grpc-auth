@@ -8,6 +8,10 @@ type LoginResponse struct {
 	RefreshToken, AccessToken string
 }
 
+type DeleteUserResponse struct {
+	Message string
+}
+
 type RefreshTokensResponse struct {
 	RefreshToken, AccessToken string
 }
