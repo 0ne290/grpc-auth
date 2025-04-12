@@ -75,7 +75,7 @@ func mapDeleteUserRequest(source *auth.DeleteUserRequest) *service.DeleteUserReq
 		return nil
 	}
 
-	return &service.DeleteUserRequest{AccessToken: source.AccessToken}
+	return &service.DeleteUserRequest{Name: source.Username, Password: source.Password}
 }
 
 func mapDeleteUserResponse(source *service.DeleteUserResponse) *auth.DeleteUserResponse {
@@ -97,7 +97,7 @@ func mapDeleteSessionRequest(source *auth.DeleteSessionRequest) *service.DeleteS
 		return nil
 	}
 
-	return &service.DeleteSessionRequest{RefreshToken: source.RefreshToken}
+	return &service.DeleteSessionRequest{Name: source.Username, Password: source.Password, RefreshToken: source.RefreshToken}
 }
 
 func mapDeleteSessionResponse(source *service.DeleteSessionResponse) *auth.DeleteSessionResponse {
@@ -119,7 +119,7 @@ func mapChangeNameRequest(source *auth.ChangeNameRequest) *service.ChangeNameReq
 		return nil
 	}
 
-	return &service.ChangeNameRequest{AccessToken: source.AccessToken, NewName: source.NewName}
+	return &service.ChangeNameRequest{Name: source.Username, Password: source.Password, NewName: source.NewName}
 }
 
 func mapChangeNameResponse(source *service.ChangeNameResponse) *auth.ChangeNameResponse {
@@ -141,7 +141,7 @@ func mapChangePasswordRequest(source *auth.ChangePasswordRequest) *service.Chang
 		return nil
 	}
 
-	return &service.ChangePasswordRequest{AccessToken: source.AccessToken, NewPassword: source.NewPassword}
+	return &service.ChangePasswordRequest{Name: source.Username, Password: source.Password, NewPassword: source.NewPassword}
 }
 
 func mapChangePasswordResponse(source *service.ChangePasswordResponse) *auth.ChangePasswordResponse {

@@ -116,32 +116,37 @@ func (s *RealService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 }
 
 func (s *RealService) DeleteUser(ctx context.Context, request *DeleteUserRequest) (*DeleteUserResponse, error) {
-	authInfo := s.jwtManager.TryParse(request.AccessToken)
-	if authInfo == nil {
-		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
-	}
-
-	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
-		return nil, &services.InvariantViolationError{Message: "access token is expired"}
-	}
-
 	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
 	userRepository := unitOfWork.UserRepository()
 
-	deleted, err := userRepository.TryDelete(ctx, authInfo.UserUuid)
+	user, err := userRepository.TryGetByName(ctx, request.Name)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
 		return nil, err
 	}
-
-	if !deleted {
+	if user == nil {
 		_ = unitOfWork.Rollback(ctx)
 
-		return nil, &services.InvariantViolationError{Message: "user not found"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
+	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	if user.Password != hashOfSaltedPassword {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	err = userRepository.Delete(ctx, user.Uuid)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
 	}
 
 	err = unitOfWork.Save(ctx)
@@ -162,19 +167,46 @@ func (s *RealService) DeleteSession(ctx context.Context, request *DeleteSessionR
 	if err != nil {
 		return nil, err
 	}
+	userRepository := unitOfWork.UserRepository()
 	sessionRepository := unitOfWork.SessionRepository()
 
-	deleted, err := sessionRepository.TryDelete(ctx, refreshToken)
+	session, err := sessionRepository.TryGetByRefreshToken(ctx, refreshToken)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
 		return nil, err
 	}
-
-	if !deleted {
+	if session == nil {
 		_ = unitOfWork.Rollback(ctx)
 
-		return nil, &services.InvariantViolationError{Message: "session not found"}
+		return nil, &services.InvariantViolationError{Message: "refresh token does not exists"}
+	}
+
+	user, err := userRepository.TryGetByName(ctx, request.Name)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
+	}
+	if user == nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
+	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	if user.Password != hashOfSaltedPassword || user.Uuid != session.UserUuid {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	err = sessionRepository.Delete(ctx, refreshToken)
+	if err != nil {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, err
 	}
 
 	err = unitOfWork.Save(ctx)
@@ -186,22 +218,13 @@ func (s *RealService) DeleteSession(ctx context.Context, request *DeleteSessionR
 }
 
 func (s *RealService) ChangeName(ctx context.Context, request *ChangeNameRequest) (*ChangeNameResponse, error) {
-	authInfo := s.jwtManager.TryParse(request.AccessToken)
-	if authInfo == nil {
-		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
-	}
-
-	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
-		return nil, &services.InvariantViolationError{Message: "access token is expired"}
-	}
-
 	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
 	userRepository := unitOfWork.UserRepository()
 
-	user, err := userRepository.TryGetByUuid(ctx, authInfo.UserUuid)
+	user, err := userRepository.TryGetByName(ctx, request.Name)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
@@ -210,12 +233,20 @@ func (s *RealService) ChangeName(ctx context.Context, request *ChangeNameRequest
 	if user == nil {
 		_ = unitOfWork.Rollback(ctx)
 
-		return nil, &services.InvariantViolationError{Message: "user not found"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
+	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	if user.Password != hashOfSaltedPassword {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	user.Name = request.NewName
-	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.NewPassword)
-	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	saltedPassword = s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
+	hashOfSaltedPassword = s.hasher.Hash(saltedPassword)
 	user.Password = hashOfSaltedPassword
 
 	updated, err := userRepository.TryUpdate(ctx, user)
@@ -239,22 +270,13 @@ func (s *RealService) ChangeName(ctx context.Context, request *ChangeNameRequest
 }
 
 func (s *RealService) ChangePassword(ctx context.Context, request *ChangePasswordRequest) (*ChangePasswordResponse, error) {
-	authInfo := s.jwtManager.TryParse(request.AccessToken)
-	if authInfo == nil {
-		return nil, &services.InvariantViolationError{Message: "access token is invalid"}
-	}
-
-	if authInfo.ExpirationAt.Before(s.timeProvider.Now()) {
-		return nil, &services.InvariantViolationError{Message: "access token is expired"}
-	}
-
 	unitOfWork, err := s.unitOfWorkStarter.Start(ctx)
 	if err != nil {
 		return nil, err
 	}
 	userRepository := unitOfWork.UserRepository()
 
-	user, err := userRepository.TryGetByUuid(ctx, authInfo.UserUuid)
+	user, err := userRepository.TryGetByName(ctx, request.Name)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
@@ -263,23 +285,26 @@ func (s *RealService) ChangePassword(ctx context.Context, request *ChangePasswor
 	if user == nil {
 		_ = unitOfWork.Rollback(ctx)
 
-		return nil, &services.InvariantViolationError{Message: "user not found"}
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
-	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.NewPassword)
+	saltedPassword := s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.Password)
 	hashOfSaltedPassword := s.hasher.Hash(saltedPassword)
+	if user.Password != hashOfSaltedPassword {
+		_ = unitOfWork.Rollback(ctx)
+
+		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
+	}
+
+	saltedPassword = s.salter.Salt(user.Uuid, user.CreatedAt, user.Name, request.NewPassword)
+	hashOfSaltedPassword = s.hasher.Hash(saltedPassword)
 	user.Password = hashOfSaltedPassword
 
-	updated, err := userRepository.TryUpdate(ctx, user)
+	_, err = userRepository.TryUpdate(ctx, user)
 	if err != nil {
 		_ = unitOfWork.Rollback(ctx)
 
 		return nil, err
-	}
-	if !updated {
-		_ = unitOfWork.Rollback(ctx)
-
-		return nil, &services.InvariantViolationError{Message: "login or/and password is invalid"}
 	}
 
 	err = unitOfWork.Save(ctx)

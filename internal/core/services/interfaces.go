@@ -40,8 +40,7 @@ type UserRepository interface {
 	TryCreate(ctx context.Context, user *entities.User) (bool, error)
 	TryUpdate(ctx context.Context, user *entities.User) (bool, error)
 	TryGetByName(ctx context.Context, name string) (*entities.User, error)
-	TryGetByUuid(ctx context.Context, userUuid uuid.UUID) (*entities.User, error)
-	TryDelete(ctx context.Context, userUuid uuid.UUID) (bool, error)
+	Delete(ctx context.Context, userUuid uuid.UUID) error
 	Exists(ctx context.Context, userUuid uuid.UUID) (bool, error)
 }
 
@@ -49,7 +48,6 @@ type SessionRepository interface {
 	Create(ctx context.Context, session *entities.Session) error
 	TryGetByRefreshToken(ctx context.Context, refreshToken uuid.UUID) (*entities.Session, error)
 	Delete(ctx context.Context, refreshToken uuid.UUID) error
-	TryDelete(ctx context.Context, refreshToken uuid.UUID) (bool, error)
 }
 
 type JwtManager interface {

@@ -83,7 +83,7 @@ func (r *MockSessionRepository) TryGetByRefreshToken(ctx context.Context, refres
 	return args.Get(0).(*entities.Session), args.Error(1)
 }
 
-func (r *MockSessionRepository) DeleteByRefreshToken(ctx context.Context, refreshToken uuid.UUID) error {
+func (r *MockSessionRepository) Delete(ctx context.Context, refreshToken uuid.UUID) error {
 	args := r.Called(ctx, refreshToken)
 	return args.Error(0)
 }
