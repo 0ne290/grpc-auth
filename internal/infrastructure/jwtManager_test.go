@@ -37,7 +37,7 @@ func TestParse(t *testing.T) {
 	token, _ := manager.Generate(expectedInfo)
 
 	// Act
-	actualInfo := manager.Parse(token)
+	actualInfo := manager.TryParse(token)
 
 	// Assert
 	assert.NotEmpty(t, actualInfo)

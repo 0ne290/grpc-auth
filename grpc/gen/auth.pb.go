@@ -223,7 +223,8 @@ func (x *LoginResponse) GetAccessToken() string {
 
 type DeleteUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -258,9 +259,16 @@ func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DeleteUserRequest) GetAccessToken() string {
+func (x *DeleteUserRequest) GetUsername() string {
 	if x != nil {
-		return x.AccessToken
+		return x.Username
+	}
+	return ""
+}
+
+func (x *DeleteUserRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
 	}
 	return ""
 }
@@ -311,7 +319,9 @@ func (x *DeleteUserResponse) GetMessage() string {
 
 type DeleteSessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	RefreshToken  string                 `protobuf:"bytes,3,opt,name=refreshToken,proto3" json:"refreshToken,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -344,6 +354,20 @@ func (x *DeleteSessionRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DeleteSessionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSessionRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeleteSessionRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *DeleteSessionRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
 }
 
 func (x *DeleteSessionRequest) GetRefreshToken() string {
@@ -397,28 +421,29 @@ func (x *DeleteSessionResponse) GetMessage() string {
 	return ""
 }
 
-type ChangeLoginRequest struct {
+type ChangeNameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
-	NewLogin      string                 `protobuf:"bytes,2,opt,name=newLogin,proto3" json:"newLogin,omitempty"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	NewName       string                 `protobuf:"bytes,3,opt,name=newName,proto3" json:"newName,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ChangeLoginRequest) Reset() {
-	*x = ChangeLoginRequest{}
+func (x *ChangeNameRequest) Reset() {
+	*x = ChangeNameRequest{}
 	mi := &file_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ChangeLoginRequest) String() string {
+func (x *ChangeNameRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ChangeLoginRequest) ProtoMessage() {}
+func (*ChangeNameRequest) ProtoMessage() {}
 
-func (x *ChangeLoginRequest) ProtoReflect() protoreflect.Message {
+func (x *ChangeNameRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -430,46 +455,53 @@ func (x *ChangeLoginRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ChangeLoginRequest.ProtoReflect.Descriptor instead.
-func (*ChangeLoginRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ChangeNameRequest.ProtoReflect.Descriptor instead.
+func (*ChangeNameRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ChangeLoginRequest) GetAccessToken() string {
+func (x *ChangeNameRequest) GetUsername() string {
 	if x != nil {
-		return x.AccessToken
+		return x.Username
 	}
 	return ""
 }
 
-func (x *ChangeLoginRequest) GetNewLogin() string {
+func (x *ChangeNameRequest) GetPassword() string {
 	if x != nil {
-		return x.NewLogin
+		return x.Password
 	}
 	return ""
 }
 
-type ChangeLoginResponse struct {
+func (x *ChangeNameRequest) GetNewName() string {
+	if x != nil {
+		return x.NewName
+	}
+	return ""
+}
+
+type ChangeNameResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ChangeLoginResponse) Reset() {
-	*x = ChangeLoginResponse{}
+func (x *ChangeNameResponse) Reset() {
+	*x = ChangeNameResponse{}
 	mi := &file_auth_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ChangeLoginResponse) String() string {
+func (x *ChangeNameResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ChangeLoginResponse) ProtoMessage() {}
+func (*ChangeNameResponse) ProtoMessage() {}
 
-func (x *ChangeLoginResponse) ProtoReflect() protoreflect.Message {
+func (x *ChangeNameResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -481,12 +513,12 @@ func (x *ChangeLoginResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ChangeLoginResponse.ProtoReflect.Descriptor instead.
-func (*ChangeLoginResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ChangeNameResponse.ProtoReflect.Descriptor instead.
+func (*ChangeNameResponse) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *ChangeLoginResponse) GetMessage() string {
+func (x *ChangeNameResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -495,8 +527,9 @@ func (x *ChangeLoginResponse) GetMessage() string {
 
 type ChangePasswordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=accessToken,proto3" json:"accessToken,omitempty"`
-	NewPassword   string                 `protobuf:"bytes,2,opt,name=newPassword,proto3" json:"newPassword,omitempty"`
+	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,3,opt,name=newPassword,proto3" json:"newPassword,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -531,9 +564,16 @@ func (*ChangePasswordRequest) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *ChangePasswordRequest) GetAccessToken() string {
+func (x *ChangePasswordRequest) GetUsername() string {
 	if x != nil {
-		return x.AccessToken
+		return x.Username
+	}
+	return ""
+}
+
+func (x *ChangePasswordRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
 	}
 	return ""
 }
@@ -789,23 +829,28 @@ const file_auth_proto_rawDesc = "" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"U\n" +
 	"\rLoginResponse\x12\"\n" +
 	"\frefreshToken\x18\x01 \x01(\tR\frefreshToken\x12 \n" +
-	"\vaccessToken\x18\x02 \x01(\tR\vaccessToken\"5\n" +
-	"\x11DeleteUserRequest\x12 \n" +
-	"\vaccessToken\x18\x01 \x01(\tR\vaccessToken\".\n" +
+	"\vaccessToken\x18\x02 \x01(\tR\vaccessToken\"K\n" +
+	"\x11DeleteUserRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\".\n" +
 	"\x12DeleteUserResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\":\n" +
-	"\x14DeleteSessionRequest\x12\"\n" +
-	"\frefreshToken\x18\x01 \x01(\tR\frefreshToken\"1\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"r\n" +
+	"\x14DeleteSessionRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\"\n" +
+	"\frefreshToken\x18\x03 \x01(\tR\frefreshToken\"1\n" +
 	"\x15DeleteSessionResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"R\n" +
-	"\x12ChangeLoginRequest\x12 \n" +
-	"\vaccessToken\x18\x01 \x01(\tR\vaccessToken\x12\x1a\n" +
-	"\bnewLogin\x18\x02 \x01(\tR\bnewLogin\"/\n" +
-	"\x13ChangeLoginResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"[\n" +
-	"\x15ChangePasswordRequest\x12 \n" +
-	"\vaccessToken\x18\x01 \x01(\tR\vaccessToken\x12 \n" +
-	"\vnewPassword\x18\x02 \x01(\tR\vnewPassword\"2\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"e\n" +
+	"\x11ChangeNameRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x18\n" +
+	"\anewName\x18\x03 \x01(\tR\anewName\".\n" +
+	"\x12ChangeNameResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\"q\n" +
+	"\x15ChangePasswordRequest\x12\x1a\n" +
+	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12 \n" +
+	"\vnewPassword\x18\x03 \x01(\tR\vnewPassword\"2\n" +
 	"\x16ChangePasswordResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\":\n" +
 	"\x14RefreshTokensRequest\x12\"\n" +
@@ -816,14 +861,15 @@ const file_auth_proto_rawDesc = "" +
 	"\x17CheckAccessTokenRequest\x12 \n" +
 	"\vaccessToken\x18\x01 \x01(\tR\vaccessToken\"6\n" +
 	"\x18CheckAccessTokenResponse\x12\x1a\n" +
-	"\bisActive\x18\x01 \x01(\bR\bisActive2\xac\x04\n" +
+	"\bisActive\x18\x01 \x01(\bR\bisActive2\xa9\x04\n" +
 	"\x04Auth\x129\n" +
 	"\bRegister\x12\x15.auth.RegisterRequest\x1a\x16.auth.RegisterResponse\x120\n" +
 	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\x12?\n" +
 	"\n" +
 	"DeleteUser\x12\x17.auth.DeleteUserRequest\x1a\x18.auth.DeleteUserResponse\x12H\n" +
-	"\rDeleteSession\x12\x1a.auth.DeleteSessionRequest\x1a\x1b.auth.DeleteSessionResponse\x12B\n" +
-	"\vChangeLogin\x12\x18.auth.ChangeLoginRequest\x1a\x19.auth.ChangeLoginResponse\x12K\n" +
+	"\rDeleteSession\x12\x1a.auth.DeleteSessionRequest\x1a\x1b.auth.DeleteSessionResponse\x12?\n" +
+	"\n" +
+	"ChangeName\x12\x17.auth.ChangeNameRequest\x1a\x18.auth.ChangeNameResponse\x12K\n" +
 	"\x0eChangePassword\x12\x1b.auth.ChangePasswordRequest\x1a\x1c.auth.ChangePasswordResponse\x12H\n" +
 	"\rRefreshTokens\x12\x1a.auth.RefreshTokensRequest\x1a\x1b.auth.RefreshTokensResponse\x12Q\n" +
 	"\x10CheckAccessToken\x12\x1d.auth.CheckAccessTokenRequest\x1a\x1e.auth.CheckAccessTokenResponseB\x19Z\x17grpc-auth/grpc/gen/authb\x06proto3"
@@ -850,8 +896,8 @@ var file_auth_proto_goTypes = []any{
 	(*DeleteUserResponse)(nil),       // 5: auth.DeleteUserResponse
 	(*DeleteSessionRequest)(nil),     // 6: auth.DeleteSessionRequest
 	(*DeleteSessionResponse)(nil),    // 7: auth.DeleteSessionResponse
-	(*ChangeLoginRequest)(nil),       // 8: auth.ChangeLoginRequest
-	(*ChangeLoginResponse)(nil),      // 9: auth.ChangeLoginResponse
+	(*ChangeNameRequest)(nil),        // 8: auth.ChangeNameRequest
+	(*ChangeNameResponse)(nil),       // 9: auth.ChangeNameResponse
 	(*ChangePasswordRequest)(nil),    // 10: auth.ChangePasswordRequest
 	(*ChangePasswordResponse)(nil),   // 11: auth.ChangePasswordResponse
 	(*RefreshTokensRequest)(nil),     // 12: auth.RefreshTokensRequest
@@ -864,7 +910,7 @@ var file_auth_proto_depIdxs = []int32{
 	2,  // 1: auth.Auth.Login:input_type -> auth.LoginRequest
 	4,  // 2: auth.Auth.DeleteUser:input_type -> auth.DeleteUserRequest
 	6,  // 3: auth.Auth.DeleteSession:input_type -> auth.DeleteSessionRequest
-	8,  // 4: auth.Auth.ChangeLogin:input_type -> auth.ChangeLoginRequest
+	8,  // 4: auth.Auth.ChangeName:input_type -> auth.ChangeNameRequest
 	10, // 5: auth.Auth.ChangePassword:input_type -> auth.ChangePasswordRequest
 	12, // 6: auth.Auth.RefreshTokens:input_type -> auth.RefreshTokensRequest
 	14, // 7: auth.Auth.CheckAccessToken:input_type -> auth.CheckAccessTokenRequest
@@ -872,7 +918,7 @@ var file_auth_proto_depIdxs = []int32{
 	3,  // 9: auth.Auth.Login:output_type -> auth.LoginResponse
 	5,  // 10: auth.Auth.DeleteUser:output_type -> auth.DeleteUserResponse
 	7,  // 11: auth.Auth.DeleteSession:output_type -> auth.DeleteSessionResponse
-	9,  // 12: auth.Auth.ChangeLogin:output_type -> auth.ChangeLoginResponse
+	9,  // 12: auth.Auth.ChangeName:output_type -> auth.ChangeNameResponse
 	11, // 13: auth.Auth.ChangePassword:output_type -> auth.ChangePasswordResponse
 	13, // 14: auth.Auth.RefreshTokens:output_type -> auth.RefreshTokensResponse
 	15, // 15: auth.Auth.CheckAccessToken:output_type -> auth.CheckAccessTokenResponse

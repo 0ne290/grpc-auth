@@ -9,7 +9,19 @@ type LoginRequest struct {
 }
 
 type DeleteUserRequest struct {
-	AccessToken string
+	Name, Password string
+}
+
+type DeleteSessionRequest struct {
+	Name, Password, RefreshToken string
+}
+
+type ChangeNameRequest struct {
+	Name, Password, NewName string
+}
+
+type ChangePasswordRequest struct {
+	Name, Password, NewPassword string
 }
 
 type RefreshTokensRequest struct {

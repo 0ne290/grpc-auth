@@ -75,7 +75,7 @@ func mapDeleteUserRequest(source *auth.DeleteUserRequest) *service.DeleteUserReq
 		return nil
 	}
 
-	return &service.DeleteUserRequest{AccessToken: source.AccessToken}
+	return &service.DeleteUserRequest{Name: source.Username, Password: source.Password}
 }
 
 func mapDeleteUserResponse(source *service.DeleteUserResponse) *auth.DeleteUserResponse {
@@ -84,6 +84,72 @@ func mapDeleteUserResponse(source *service.DeleteUserResponse) *auth.DeleteUserR
 	}
 
 	return &auth.DeleteUserResponse{Message: source.Message}
+}
+
+func (s *Controller) DeleteSession(ctx context.Context, req *auth.DeleteSessionRequest) (*auth.DeleteSessionResponse, error) {
+	ret, err := s.service.DeleteSession(ctx, mapDeleteSessionRequest(req))
+
+	return mapDeleteSessionResponse(ret), err
+}
+
+func mapDeleteSessionRequest(source *auth.DeleteSessionRequest) *service.DeleteSessionRequest {
+	if source == nil {
+		return nil
+	}
+
+	return &service.DeleteSessionRequest{Name: source.Username, Password: source.Password, RefreshToken: source.RefreshToken}
+}
+
+func mapDeleteSessionResponse(source *service.DeleteSessionResponse) *auth.DeleteSessionResponse {
+	if source == nil {
+		return nil
+	}
+
+	return &auth.DeleteSessionResponse{Message: source.Message}
+}
+
+func (s *Controller) ChangeName(ctx context.Context, req *auth.ChangeNameRequest) (*auth.ChangeNameResponse, error) {
+	ret, err := s.service.ChangeName(ctx, mapChangeNameRequest(req))
+
+	return mapChangeNameResponse(ret), err
+}
+
+func mapChangeNameRequest(source *auth.ChangeNameRequest) *service.ChangeNameRequest {
+	if source == nil {
+		return nil
+	}
+
+	return &service.ChangeNameRequest{Name: source.Username, Password: source.Password, NewName: source.NewName}
+}
+
+func mapChangeNameResponse(source *service.ChangeNameResponse) *auth.ChangeNameResponse {
+	if source == nil {
+		return nil
+	}
+
+	return &auth.ChangeNameResponse{Message: source.Message}
+}
+
+func (s *Controller) ChangePassword(ctx context.Context, req *auth.ChangePasswordRequest) (*auth.ChangePasswordResponse, error) {
+	ret, err := s.service.ChangePassword(ctx, mapChangePasswordRequest(req))
+
+	return mapChangePasswordResponse(ret), err
+}
+
+func mapChangePasswordRequest(source *auth.ChangePasswordRequest) *service.ChangePasswordRequest {
+	if source == nil {
+		return nil
+	}
+
+	return &service.ChangePasswordRequest{Name: source.Username, Password: source.Password, NewPassword: source.NewPassword}
+}
+
+func mapChangePasswordResponse(source *service.ChangePasswordResponse) *auth.ChangePasswordResponse {
+	if source == nil {
+		return nil
+	}
+
+	return &auth.ChangePasswordResponse{Message: source.Message}
 }
 
 func (s *Controller) RefreshTokens(ctx context.Context, req *auth.RefreshTokensRequest) (*auth.RefreshTokensResponse, error) {

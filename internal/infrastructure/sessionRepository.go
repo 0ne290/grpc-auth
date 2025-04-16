@@ -45,7 +45,7 @@ func (r *PosgresSessionRepository) TryGetByRefreshToken(ctx context.Context, ref
 	return session, nil
 }
 
-func (r *PosgresSessionRepository) DeleteByRefreshToken(ctx context.Context, refreshToken uuid.UUID) error {
+func (r *PosgresSessionRepository) Delete(ctx context.Context, refreshToken uuid.UUID) error {
 	const query string = "DELETE FROM sessions WHERE refresh_token = $1"
 
 	_, err := r.transaction.Exec(ctx, query, refreshToken)
@@ -54,6 +54,17 @@ func (r *PosgresSessionRepository) DeleteByRefreshToken(ctx context.Context, ref
 	}
 
 	return nil
+}
+
+func (r *PosgresSessionRepository) TryDelete(ctx context.Context, refreshToken uuid.UUID) (bool, error) {
+	const query string = "DELETE FROM sessions WHERE refresh_token = $1"
+
+	commandTag, err := r.transaction.Exec(ctx, query, refreshToken)
+	if err != nil {
+		return false, err
+	}
+
+	return commandTag.RowsAffected() != 0, nil
 }
 
 type MockSessionRepository struct {
@@ -72,7 +83,7 @@ func (r *MockSessionRepository) TryGetByRefreshToken(ctx context.Context, refres
 	return args.Get(0).(*entities.Session), args.Error(1)
 }
 
-func (r *MockSessionRepository) DeleteByRefreshToken(ctx context.Context, refreshToken uuid.UUID) error {
+func (r *MockSessionRepository) Delete(ctx context.Context, refreshToken uuid.UUID) error {
 	args := r.Called(ctx, refreshToken)
 	return args.Error(0)
 }

@@ -2,6 +2,9 @@
 
 ## Команда для генерации файлов .go из .proto: protoc -I grpc/proto grpc/proto/auth.proto --go_out=grpc/gen --go_opt=paths=source_relative --go-grpc_out=grpc/gen --go-grpc_opt=paths=source_relative
 
+## TODO:
+1. Добавить удаление всех сессий юзера, кроме текущей (полезно при гипотетических "взломах" и восстановлении после них).
+
 # Для всех:
 
 ## Как запускать:
@@ -28,4 +31,5 @@ DB_POOL_MAX_CONNS=10
 DB_POOL_MAX_CONN_LIFETIME=300s
 DB_POOL_MAX_CONN_IDLE_TIME=150s
 ```
-2. Выполните команду docker compose up.
+2. Убедиться, что существует пустой Docker Volume с именем "go-microservices-app-db-data".
+3. Выполните команду docker compose up.

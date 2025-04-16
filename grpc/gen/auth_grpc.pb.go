@@ -23,7 +23,7 @@ const (
 	Auth_Login_FullMethodName            = "/auth.Auth/Login"
 	Auth_DeleteUser_FullMethodName       = "/auth.Auth/DeleteUser"
 	Auth_DeleteSession_FullMethodName    = "/auth.Auth/DeleteSession"
-	Auth_ChangeLogin_FullMethodName      = "/auth.Auth/ChangeLogin"
+	Auth_ChangeName_FullMethodName       = "/auth.Auth/ChangeName"
 	Auth_ChangePassword_FullMethodName   = "/auth.Auth/ChangePassword"
 	Auth_RefreshTokens_FullMethodName    = "/auth.Auth/RefreshTokens"
 	Auth_CheckAccessToken_FullMethodName = "/auth.Auth/CheckAccessToken"
@@ -37,7 +37,7 @@ type AuthClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
 	DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error)
-	ChangeLogin(ctx context.Context, in *ChangeLoginRequest, opts ...grpc.CallOption) (*ChangeLoginResponse, error)
+	ChangeName(ctx context.Context, in *ChangeNameRequest, opts ...grpc.CallOption) (*ChangeNameResponse, error)
 	ChangePassword(ctx context.Context, in *ChangePasswordRequest, opts ...grpc.CallOption) (*ChangePasswordResponse, error)
 	RefreshTokens(ctx context.Context, in *RefreshTokensRequest, opts ...grpc.CallOption) (*RefreshTokensResponse, error)
 	CheckAccessToken(ctx context.Context, in *CheckAccessTokenRequest, opts ...grpc.CallOption) (*CheckAccessTokenResponse, error)
@@ -91,10 +91,10 @@ func (c *authClient) DeleteSession(ctx context.Context, in *DeleteSessionRequest
 	return out, nil
 }
 
-func (c *authClient) ChangeLogin(ctx context.Context, in *ChangeLoginRequest, opts ...grpc.CallOption) (*ChangeLoginResponse, error) {
+func (c *authClient) ChangeName(ctx context.Context, in *ChangeNameRequest, opts ...grpc.CallOption) (*ChangeNameResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChangeLoginResponse)
-	err := c.cc.Invoke(ctx, Auth_ChangeLogin_FullMethodName, in, out, cOpts...)
+	out := new(ChangeNameResponse)
+	err := c.cc.Invoke(ctx, Auth_ChangeName_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ type AuthServer interface {
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
 	DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error)
-	ChangeLogin(context.Context, *ChangeLoginRequest) (*ChangeLoginResponse, error)
+	ChangeName(context.Context, *ChangeNameRequest) (*ChangeNameResponse, error)
 	ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error)
 	RefreshTokens(context.Context, *RefreshTokensRequest) (*RefreshTokensResponse, error)
 	CheckAccessToken(context.Context, *CheckAccessTokenRequest) (*CheckAccessTokenResponse, error)
@@ -165,8 +165,8 @@ func (UnimplementedAuthServer) DeleteUser(context.Context, *DeleteUserRequest) (
 func (UnimplementedAuthServer) DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSession not implemented")
 }
-func (UnimplementedAuthServer) ChangeLogin(context.Context, *ChangeLoginRequest) (*ChangeLoginResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ChangeLogin not implemented")
+func (UnimplementedAuthServer) ChangeName(context.Context, *ChangeNameRequest) (*ChangeNameResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeName not implemented")
 }
 func (UnimplementedAuthServer) ChangePassword(context.Context, *ChangePasswordRequest) (*ChangePasswordResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
@@ -270,20 +270,20 @@ func _Auth_DeleteSession_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Auth_ChangeLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeLoginRequest)
+func _Auth_ChangeName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeNameRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthServer).ChangeLogin(ctx, in)
+		return srv.(AuthServer).ChangeName(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Auth_ChangeLogin_FullMethodName,
+		FullMethod: Auth_ChangeName_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServer).ChangeLogin(ctx, req.(*ChangeLoginRequest))
+		return srv.(AuthServer).ChangeName(ctx, req.(*ChangeNameRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -366,8 +366,8 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Auth_DeleteSession_Handler,
 		},
 		{
-			MethodName: "ChangeLogin",
-			Handler:    _Auth_ChangeLogin_Handler,
+			MethodName: "ChangeName",
+			Handler:    _Auth_ChangeName_Handler,
 		},
 		{
 			MethodName: "ChangePassword",
